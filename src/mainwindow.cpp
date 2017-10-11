@@ -227,7 +227,7 @@ void MainWindow::updateVol(int pid, int vol)
 	qDebug()<<"now min " << min << " product " << pid << " vol " << vol;
 }
 
-void MainWindow::modeSwitch(int mode)
+void MainWindow::modeSwitch(int /*mode*/)
 {
 	/*ui->tv->setModel(dataModel[mode]);
 

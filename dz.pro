@@ -37,4 +37,4 @@ FORMS    += ui/dialogconfig.ui \
 
 INCLUDEPATH += src
 
-RESOURCES += res/dz.qrc
+RESOURCES += dz.qrc
