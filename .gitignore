@@ -1,0 +1,7 @@
+dz.pro.user
+.qmake.stash
+tags
+cscope.out
+.*.swp
+.swp
+*.o

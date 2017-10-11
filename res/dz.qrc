@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/"/>
+    <qresource prefix="/fonts">
+        <file alias="LucidaTypewriterRegular.ttf">res/fonts/LucidaTypewriterRegular.ttf</file>
+    </qresource>
+    <qresource prefix="/images">
+        <file>res/images/app-logo.png</file>
+        <file>res/images/app-name.png</file>
+        <file>res/images/delphi-logo-blue.png</file>
+        <file>res/images/delphi-logo-red.png</file>
+    </qresource>
+</RCC>
