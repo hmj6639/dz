@@ -1,12 +1,29 @@
 <RCC>
-    <qresource prefix="/"/>
-    <qresource prefix="/fonts">
-        <file alias="LucidaTypewriterRegular.ttf">res/fonts/LucidaTypewriterRegular.ttf</file>
-    </qresource>
-    <qresource prefix="/images">
+    <qresource prefix="/">
+        <file>res/css/black.css</file>
+        <file>res/css/blue.css</file>
+        <file>res/css/gray.css</file>
+        <file>res/css/navy.css</file>
+        <file>res/fonts/fontawesome-webfont.ttf</file>
+        <file>res/fonts/LucidaTypewriterBold.ttf</file>
+        <file>res/fonts/LucidaTypewriterRegular.ttf</file>
+        <file>res/images/add-line_horizontal.png</file>
+        <file>res/images/add-line_vertical.png</file>
         <file>res/images/app-logo.png</file>
         <file>res/images/app-name.png</file>
+        <file>res/images/array_down.png</file>
+        <file>res/images/checkbox_checked.png</file>
+        <file>res/images/checkbox_unchecked.png</file>
+        <file>res/images/delphi-blue.png</file>
         <file>res/images/delphi-logo-blue.png</file>
         <file>res/images/delphi-logo-red.png</file>
+        <file>res/images/error.png</file>
+        <file>res/images/Font Awesome Cheatsheet.png</file>
+        <file>res/images/info.png</file>
+        <file>res/images/question.png</file>
+        <file>res/images/radio_normal.png</file>
+        <file>res/images/radio_selected.png</file>
+        <file>res/images/sub-line_horizontal.png</file>
+        <file>res/images/sub-line_vertical.png</file>
     </qresource>
 </RCC>

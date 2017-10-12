@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_7">
     <item row="0" column="0">
-     <widget class="QWidget" name="widget" native="true">
+     <widget class="QWidget" name="widget_title" native="true">
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -24,7 +24,7 @@
        </size>
       </property>
       <property name="styleSheet">
-       <string notr="true">background-color: black</string>
+       <string notr="true"/>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,1,2,2">
        <item>
@@ -45,7 +45,7 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap>:/images/res/images/delphi-logo-red.png</pixmap>
+          <pixmap resource="../dz.qrc">:/res/images/delphi-logo-red.png</pixmap>
          </property>
          <property name="scaledContents">
           <bool>true</bool>
@@ -80,7 +80,7 @@
           <string/>
          </property>
          <property name="pixmap">
-          <pixmap>:/images/res/images/app-name.png</pixmap>
+          <pixmap resource="../dz.qrc">:/res/images/app-name.png</pixmap>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -90,7 +90,7 @@
        <item>
         <widget class="QLabel" name="label_9">
          <property name="text">
-          <string>TextLabel</string>
+          <string/>
          </property>
          <property name="alignment">
           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -109,9 +109,9 @@
        <attribute name="title">
         <string>Main</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_4" rowstretch="1,2" columnstretch="2,1">
+       <layout class="QGridLayout" name="gridLayout_4" rowstretch="1,0" columnstretch="2,1">
         <item row="0" column="0">
-         <layout class="QVBoxLayout" name="verticalLayout_2">
+         <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,0">
           <item>
            <widget class="QGroupBox" name="groupBox_3">
             <property name="title">
@@ -119,53 +119,65 @@
             </property>
             <layout class="QGridLayout" name="gridLayout_3">
              <property name="verticalSpacing">
-              <number>12</number>
+              <number>6</number>
              </property>
-             <item row="0" column="1">
-              <widget class="QSpinBox" name="trim">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
+             <item row="0" column="5">
+              <widget class="QPushButton" name="Go">
+               <property name="minimumSize">
+                <size>
+                 <width>120</width>
+                 <height>0</height>
+                </size>
                </property>
-               <property name="minimum">
-                <number>1</number>
-               </property>
-               <property name="maximum">
-                <number>359</number>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_6">
-               <property name="toolTip">
-                <string>0~359</string>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>16777215</height>
+                </size>
                </property>
                <property name="text">
-                <string>Angle Trim</string>
+                <string>Anti-Clockwise</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="0" colspan="4">
+             <item row="0" column="3">
+              <widget class="QPushButton" name="btnAdClockwise">
+               <property name="minimumSize">
+                <size>
+                 <width>120</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>Clockwise</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0" colspan="6">
               <layout class="QHBoxLayout" name="horizontalLayout_4">
                <item>
                 <widget class="QPushButton" name="start">
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
                  <property name="minimumSize">
                   <size>
-                   <width>0</width>
+                   <width>120</width>
                    <height>0</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>160</width>
+                   <width>16777215</width>
                    <height>16777215</height>
                   </size>
                  </property>
@@ -175,25 +187,38 @@
                 </widget>
                </item>
                <item>
+                <spacer name="horizontalSpacer_2">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
                 <widget class="QPushButton" name="pause">
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
                  <property name="minimumSize">
                   <size>
-                   <width>0</width>
+                   <width>120</width>
                    <height>0</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>160</width>
+                   <width>16777215</width>
                    <height>16777215</height>
                   </size>
                  </property>
@@ -203,25 +228,38 @@
                 </widget>
                </item>
                <item>
+                <spacer name="horizontalSpacer_7">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
                 <widget class="QPushButton" name="reset">
                  <property name="enabled">
                   <bool>false</bool>
                  </property>
                  <property name="sizePolicy">
-                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
                  <property name="minimumSize">
                   <size>
-                   <width>0</width>
+                   <width>120</width>
                    <height>0</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>160</width>
+                   <width>16777215</width>
                    <height>16777215</height>
                   </size>
                  </property>
@@ -232,43 +270,94 @@
                </item>
               </layout>
              </item>
-             <item row="0" column="3">
-              <widget class="QPushButton" name="Go">
-               <property name="maximumSize">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_6">
+               <property name="minimumSize">
                 <size>
-                 <width>160</width>
-                 <height>16777215</height>
+                 <width>120</width>
+                 <height>0</height>
                 </size>
                </property>
+               <property name="toolTip">
+                <string>0~359</string>
+               </property>
                <property name="text">
-                <string>Anti-Clockwise</string>
+                <string>Angle Trim</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="2">
-              <widget class="QPushButton" name="btnAdClockwise">
-               <property name="maximumSize">
+             <item row="0" column="1">
+              <widget class="QSpinBox" name="trim">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
                 <size>
-                 <width>160</width>
-                 <height>16777215</height>
+                 <width>120</width>
+                 <height>0</height>
                 </size>
                </property>
-               <property name="text">
-                <string>Clockwise</string>
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <number>359</number>
                </property>
               </widget>
+             </item>
+             <item row="0" column="6">
+              <spacer name="horizontalSpacer_10">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="2" column="6">
+              <spacer name="horizontalSpacer_8">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
              </item>
             </layout>
            </widget>
           </item>
           <item>
            <widget class="QGroupBox" name="groupBox_6">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="title">
              <string>Trace Log</string>
             </property>
             <layout class="QGridLayout" name="gridLayout_6">
              <item row="0" column="0">
-              <widget class="QPlainTextEdit" name="plainTextEdit"/>
+              <widget class="QPlainTextEdit" name="plainTextEdit">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>60</height>
+                </size>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>
@@ -281,8 +370,11 @@
            <string>Status Summary</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
+           <property name="topMargin">
+            <number>9</number>
+           </property>
            <property name="verticalSpacing">
-            <number>12</number>
+            <number>6</number>
            </property>
            <item row="2" column="4">
             <widget class="QLabel" name="lblFailNbr">
@@ -400,7 +492,7 @@
                </property>
                <property name="minimumSize">
                 <size>
-                 <width>0</width>
+                 <width>80</width>
                  <height>0</height>
                 </size>
                </property>
@@ -475,6 +567,12 @@
              </item>
              <item>
               <widget class="QPushButton" name="pushButton">
+               <property name="minimumSize">
+                <size>
+                 <width>120</width>
+                 <height>0</height>
+                </size>
+               </property>
                <property name="text">
                 <string>Clear</string>
                </property>
@@ -511,10 +609,23 @@
           </property>
           <layout class="QGridLayout" name="gridLayout_8">
            <item row="0" column="1">
-            <widget class="QLineEdit" name="lineEdit"/>
+            <widget class="QLineEdit" name="lineEdit">
+             <property name="minimumSize">
+              <size>
+               <width>240</width>
+               <height>0</height>
+              </size>
+             </property>
+            </widget>
            </item>
            <item row="0" column="2">
             <widget class="QPushButton" name="pushButton_2">
+             <property name="minimumSize">
+              <size>
+               <width>120</width>
+               <height>0</height>
+              </size>
+             </property>
              <property name="text">
               <string>Browse</string>
              </property>
@@ -531,6 +642,9 @@
             <spacer name="horizontalSpacer_9">
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Expanding</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
@@ -1082,6 +1196,8 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources/>
+ <resources>
+  <include location="../dz.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -26,14 +26,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES +=	main.cpp\
 	src/serialworker.cpp \
 	src/dialogconfig.cpp \
-	src/mainwindow.cpp
+	src/mainwindow.cpp \
+    src/frmmessagebox.cpp \
+    src/iconhelper.cpp
 
 HEADERS  += src/serialworker.h \
 	src/dialogconfig.h \
-	src/mainwindow.h
+	src/mainwindow.h \
+    src/iconhelper.h \
+    src/myhelper.h \
+    src/frmmessagebox.h
 
 FORMS    += ui/dialogconfig.ui \
-	ui/mainwindow.ui
+	ui/mainwindow.ui \
+    ui/frmmessagebox.ui
 
 INCLUDEPATH += src
 

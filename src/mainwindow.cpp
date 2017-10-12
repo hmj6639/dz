@@ -1,17 +1,20 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+
 #include <QDesktopWidget>
 #include <QFontDatabase>
 #include <QDebug>
 #include <QStandardItemModel>
 #include <QMessageBox>
 
+#include "myhelper.h"
+
 void MainWindow::initSize()
 {
 	const QRect availableGeometry = QApplication::desktop()->availableGeometry(this);
 
 	QFont font;
-	int fontId = QFontDatabase::addApplicationFont(":/fonts/LucidaTypewriterRegular.ttf");
+    int fontId = QFontDatabase::addApplicationFont(":/res/fonts/LucidaTypewriterRegular.ttf");
 	if (fontId != -1) {
 		const QStringList families = QFontDatabase::applicationFontFamilies(fontId);
 		if (!families.empty()) {
@@ -28,7 +31,7 @@ void MainWindow::initSize()
 	//int h = availableGeometry.height() * 3 / 4;
 	//int w = h * 850 / 600;
 	int h = availableGeometry.height() * 3 / 4;
-	int w = h * 16 / 9;
+    int w = h * 16 / 10;
 	resize(w, h);
 
 	setIconSize(QSize(16, 16));
@@ -119,10 +122,12 @@ int MainWindow::checkAng()
 		return 0;
 }
 
+
 void MainWindow::doWarning(QString label)
 {
-	msgBox->setText(label);
-	msgBox->exec();
+    myHelper::ShowMessageBoxInfo(label);
+    //msgBox->setText(label);
+    //msgBox->exec();
 }
 
 void MainWindow::E_D_Status(bool s, bool p, bool r, bool c)
@@ -184,7 +189,7 @@ void MainWindow::doAroll()
 	if(ui->start->isEnabled() == false && ui->pause->isEnabled() == false && ui->reset->isEnabled()==false) {
 		QList<QAbstractButton *> buttons = msgBox->buttons();
 		buttons[0]->setEnabled(true);
-		msgBox->setText("Please re-calibrate the device and contine");
+        msgBox->setText("Please re-calibrate the device and contine");
 		E_D_Status(true, false, false, true);
 		return;
 	}
