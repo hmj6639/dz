@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>366</width>
+    <width>384</width>
     <height>164</height>
    </rect>
   </property>
@@ -233,7 +233,7 @@
           <rect>
            <x>10</x>
            <y>80</y>
-           <width>331</width>
+           <width>351</width>
            <height>34</height>
           </rect>
          </property>
@@ -263,7 +263,7 @@
              <string notr="true"/>
             </property>
             <property name="text">
-             <string>Yes</string>
+             <string>OK</string>
             </property>
             <property name="icon">
              <iconset>
@@ -289,7 +289,7 @@
              <string notr="true"/>
             </property>
             <property name="text">
-             <string>No</string>
+             <string>Cancel</string>
             </property>
             <property name="icon">
              <iconset>

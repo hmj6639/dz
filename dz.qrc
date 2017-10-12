@@ -25,5 +25,6 @@
         <file>res/images/radio_selected.png</file>
         <file>res/images/sub-line_horizontal.png</file>
         <file>res/images/sub-line_vertical.png</file>
+        <file>res/images/sapa-logo.png</file>
     </qresource>
 </RCC>
