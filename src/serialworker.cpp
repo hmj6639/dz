@@ -5,17 +5,24 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-//unsigned char bufEng[] = {0x01, 0x10, 0x71, 0x48, 0x00, 0x02, 0x04, 0x00, 0x0f, 0x00, 0x00, 0xae, 0x68};
 unsigned char bufEng[] = {0x01, 0x10, 0x71, 0x48, 0x00, 0x02, 0x04, 0x00, 0x4f, 0x00, 0x00, 0xaf, 0xbc};
 unsigned char phaseEngRes[] = {0x01, 0x10, 0x71, 0x48, 0x00, 0x02, 0xda, 0xe2};
 unsigned char bufPos[] = {0x01, 0x10, 0x71, 0x58, 0x00, 0x02, 0x04, 0x00, 0x01, 0x00, 0x00, 0xce, 0xa7};
 unsigned char phasePosRes[] = {0x01, 0x10, 0x71, 0x58, 0x00, 0x02, 0xdb, 0x27};
+
+
 unsigned char bufCyc[] = {0x01, 0x10, 0x71, 0x4a, 0x00, 0x02, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 unsigned char phaseCycRes[] = {0x01, 0x10, 0x71, 0x4a, 0x00, 0x02, 0x7b, 0x22};
 unsigned char bufAng[] = {0x01, 0x10, 0x71, 0x4b, 0x00, 0x02, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 unsigned char phaseAngRes[] = {0x01, 0x10, 0x71, 0x4b, 0x00, 0x02, 0x2a, 0xe2};
 unsigned char bufSta[] = {0x01, 0x10, 0x71, 0x48, 0x00, 0x02, 0x04, 0x00, 0x5f, 0x00, 0x00, 0xae, 0x79};
 unsigned char phaseStaRes[] = {0x01, 0x10, 0x71, 0x48, 0x00, 0x02, 0xda, 0xe2};
+
+unsigned char bufSto[] = {0x01, 0x10, 0x71, 0x48, 0x00, 0x02, 0x04, 0x00, 0x0f, 0x00, 0x00, 0xae, 0x68};
+unsigned char phaseStoRes[] = {0x01, 0x10, 0x71, 0x48, 0x00, 0x02, 0xda, 0xe2};
+
+
+unsigned char bufArr[] = {0x01,  0x20, 0x71, 0x49, 0x00, 0x02, 0x04, 0x04, 0x00, 0x00, 0x00, 0x5e, 0x68};
 
 void dumpBuf(int n, unsigned char *buf, int s)
 {
@@ -124,7 +131,6 @@ void SerialWorker::buildPhaseCmd(int gui_ang)
 		}
 	}
 
-
 	// qDebug()<<cyc << ang;
 	fillCycBuf(cyc, bufCyc, sizeof(bufCyc) / sizeof(bufCyc[0]));
 	fillAngBuf(ang, bufAng, sizeof(bufAng) / sizeof(bufAng[0]));
@@ -139,7 +145,7 @@ void SerialWorker::doPhaseCmd(int step, int w=0)
 		rollPause = w;
 		// qDebug()<< "step " << step << " wait " << rollPause;
 	}
-
+   qDebug()<<"do step " << step;
 	switch(step) {	
 		case ENABLEPHASE:
 			cmd = bufEng;
@@ -161,25 +167,30 @@ void SerialWorker::doPhaseCmd(int step, int w=0)
 			len = sizeof(bufAng) / sizeof(bufAng[0]);
 			break;
 
-		case STARTPHASE:
+        case STARTR:
 			cmd = bufSta;
 			len = sizeof(bufSta) / sizeof(bufSta[0]);
 			break;
 
-		case FININSHROLL:
-			cmd = bufEng;
-			len = sizeof(bufEng) / sizeof(bufEng[0]);
+        case STOPR:
+            cmd = bufSto;
+            len = sizeof(bufSto) / sizeof(bufSto[0]);
 			break;
 
+		case CHECKARR:
+            cmd = bufArr;
+            len = sizeof(bufArr) / sizeof(bufArr[0]);
+            //break;
+
 		case OVERROLL:
-			//qDebug()<<"next ang is aftre " << rollPause;
+            qDebug()<<"next ang is after " << rollPause;
 			QTimer::singleShot(rollPause, this, [=](){
 					emit rollfinish();});
 
 		default:
 			return;
 	}
-	//dumpBuf(sec, cmd, len);
+    //dumpBuf(sec, cmd, len);
 	memset(tmpRes, 0, sizeof(tmpRes));
 	sfd[COM_PHASE].serial->write((const char *)cmd, len);
 	sec = step;
@@ -283,7 +294,6 @@ int SerialWorker::checkPhaseRes()
 
 	switch(sec) {
 		case ENABLEPHASE:
-		case FININSHROLL:
 			res = phaseEngRes;
 			resLen = sizeof(phaseEngRes) / sizeof(phaseEngRes[0]);
 			break;
@@ -303,10 +313,18 @@ int SerialWorker::checkPhaseRes()
 			resLen = sizeof(phaseAngRes) / sizeof(phaseAngRes[0]);
 			break;
 
-		case(STARTPHASE):
+        case(STARTR):
 			res = phaseStaRes;
 			resLen = sizeof(phaseStaRes) / sizeof(phaseStaRes[0]);
 			break;
+
+        case STOPR:
+            res = phaseStoRes;
+            resLen = sizeof(phaseStoRes) / sizeof(phaseStoRes[0]);
+            break;
+
+        case(CHECKARR):
+            return 0;
 
 		default:
 			return -1;
@@ -334,16 +352,15 @@ void SerialWorker::dealWithPhaseRes(QByteArray &text)
 		tmpRes[tmpRes[0]+i+1] = text.at(i);	
 	tmpRes[0]+= text.size();
 
-
 	if(checkPhaseRes() != 0) {
-		qDebug()<<"wrong at " << sec << " " << text;
+        qDebug()<<"wrong at " << sec << " " << text.toHex();
 		return;
 	}
 
-#if 0
-	qDebug()<<sec <<" phase back ";
-	for(int i= 1; i <= tmpRes[0]; i++)
-		qDebug()<< QString("%1").arg(tmpRes[i] , 0, 16);
+#if 1
+    qDebug()<<sec <<" phase back " << text.toHex();
+    //for(int i= 1; i <= tmpRes[0]; i++)
+    //	qDebug()<< QString("%1").arg(tmpRes[i] , 0, 16);
 #endif
 
 	if(sec != SETTYPE)

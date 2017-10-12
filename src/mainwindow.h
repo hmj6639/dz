@@ -42,16 +42,18 @@ private:
 	QMessageBox *msgBox;
 	int hour = 0, min = 0;
 	int paused = 0, isGo = 0;
+    int reset = 0;
 
 	SerialWorker *sw = NULL;
 	QThread serialWorkerThread;
 	QList <QLineEdit *>angSeq;
-	QList <QLineEdit *>pauseSeq;
+    QList <QLineEdit *>pauseSeq;
 
 	int checkAng();
 	void E_D_Status(bool, bool, bool, bool);
 	void fastGo(int);
 	void openDevice();
+	void freshSummary(int result);
 
 public 	slots:
 	void doAroll();

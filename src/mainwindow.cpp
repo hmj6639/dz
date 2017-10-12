@@ -6,8 +6,11 @@
 #include <QDebug>
 #include <QStandardItemModel>
 #include <QMessageBox>
+#include <QDateTime>
 
 #include "myhelper.h"
+
+int STATICWAIT[] = {1000, 1500, 1000,1500, 1000, 1500, 2500};
 
 void MainWindow::initSize()
 {
@@ -33,15 +36,14 @@ void MainWindow::initSize()
 	int h = availableGeometry.height() * 3 / 4;
     int w = h * 16 / 10;
 	resize(w, h);
-
 	setIconSize(QSize(16, 16));
 	msgBox = new QMessageBox(this);
 	msgBox->setWindowTitle("Warning");
 
 	angSeq << ui->a1 << ui->a2 << ui->a3 << ui->a4 << ui->a5 << ui->a6 << ui->a7;
-	pauseSeq << ui->c1 << ui->c2 << ui->c3 << ui->c4 << ui->c5 << ui->c6 << ui->c7;
+    pauseSeq << ui->c1 << ui->c2 << ui->c3<<  ui->c4 <<  ui->c5 <<  ui->c6 <<  ui->c7;
 
-	openDevice();
+    openDevice();
 	return;
 }
 
@@ -99,14 +101,26 @@ void MainWindow::on_start_clicked()
 		paused = 0;
 		qDebug()<<"continue";
 	}
+    reset = 0;
+    ui->stepLog->clear();
 
 	E_D_Status(false, true, true, false);
 	doAroll();
 }
 
+void MainWindow::freshSummary(int result)
+{
+  //  ui->lblTotalNbr  ui->cycle->value();
+	if(result == 1) {
+		
+	}
+	else if(result == -1) {
+	}
+}
+
 int MainWindow::checkAng()
 {
-	return 0;
+    return 0;
 	int total = 0;
 
 	for(int i = 0; i < angSeq.size(); i++) {
@@ -121,7 +135,6 @@ int MainWindow::checkAng()
 	else
 		return 0;
 }
-
 
 void MainWindow::doWarning(QString label)
 {
@@ -151,10 +164,11 @@ void MainWindow::on_reset_clicked()
 	hour = 0;
 	min = 0;
 
+    reset = 1;
 	QList<QAbstractButton *> buttons = msgBox->buttons();
 	if(buttons.size() > 0)
 		buttons[0]->setEnabled(false);
-	doWarning("Please waiting for about 5s to cancel the test.... ");
+    //doWarning("Please waiting for about 5s to cancel the test.... ");
 }
 
 void MainWindow::fastGo(int ang)
@@ -185,22 +199,28 @@ void MainWindow::on_Go_clicked()
 void MainWindow::doAroll()
 {
 	int ang;
-
-	if(ui->start->isEnabled() == false && ui->pause->isEnabled() == false && ui->reset->isEnabled()==false) {
-		QList<QAbstractButton *> buttons = msgBox->buttons();
-		buttons[0]->setEnabled(true);
-        msgBox->setText("Please re-calibrate the device and contine");
-		E_D_Status(true, false, false, true);
-		return;
-	}
+    QString startTime = QDateTime::currentDateTime().toString("yyyy-mm-dd, hh:mm:ss.zzz");
+	QString lastArr = ",ok";
 
 	if(min < angSeq.size()) {
 		ang = angSeq[min]->text().toInt();
 		if(paused == 0) {
-			qDebug()<<"Now roll " <<ang << "wait " << pauseSeq[min]->text().toInt();
+           // qDebug()<<QDateTime::currentDateTime().toString("yy-mm-dd,hh:mm:ss.zzz") << " roll " <<ang << "wait " << pauseSeq[min]->text().toInt();
 			if(ang != 0) {
+				
+
+				if(min == 0) {
+                    QString startLine = startTime + " cycle " + QString::number(hour + 1) + " started";
+                    ui->result->appendPlainText(startLine);
+				}
+				else
+				ui->result->appendPlainText(startTime + lastArr);
 				sw->buildPhaseCmd(ang);
-				emit doPhaseCmd(SETCYC, pauseSeq[min]->text().toInt());
+                emit doPhaseCmd(SETCYC, STATICWAIT[min] + pauseSeq[min]->text().toInt());
+				startTime = QDateTime::currentDateTime().toString("yyyy-mm-dd,hh:mm:ss.zzz");
+				QString angLine = startTime + " roll " + QString::number(ang);
+				ui->result->appendPlainText(angLine);
+				
 				min++;
 			}
 			else {
@@ -211,13 +231,31 @@ void MainWindow::doAroll()
 	}
 	else {
 		hour++;
-		qDebug()<< hour << "page has finished";
+        QString finishLine = QDateTime::currentDateTime().toString("yyyy-mm-dd,hh:mm:ss.zzz") + " cycle " + QString::number(hour) + " has finished";
+        //ui->result->appendPlainText(finishLine);
+
 		min = 0;
 		if(hour < ui->cycle->value()) {
+            if(reset == 0) {
+				
+				ui->result->appendPlainText(startTime + lastArr);
 			QThread::sleep(3);
+                ui->stepLog->clear();
 			doAroll();
 		}
 		else {
+                if(ui->start->isEnabled() == false && ui->pause->isEnabled() == false && ui->reset->isEnabled()==false) {
+                    QList<QAbstractButton *> buttons = msgBox->buttons();
+                    buttons[0]->setEnabled(true);
+                    msgBox->setText("Please re-calibrate the device and contine");
+                    E_D_Status(true, false, false, true);
+                    return;
+                }
+            }
+		}
+		else {
+			
+			ui->result->appendPlainText(startTime + lastArr);
 			doWarning("The test has been finished");
 			E_D_Status(true, false, false, true);
 			min = 0;
