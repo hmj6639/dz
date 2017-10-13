@@ -7,10 +7,11 @@
 #include <QStandardItemModel>
 #include <QMessageBox>
 #include <QDateTime>
+#include <QFile>
+#include <QTextStream>
 
 #include "myhelper.h"
-
-int STATICWAIT[] = {1000, 1500, 1000,1500, 1000, 1500, 2500};
+int STATICWAIT[] = {1500, 3300, 2500, 3300, 2500, 3300, 7000};
 
 void MainWindow::initSize()
 {
@@ -104,6 +105,9 @@ void MainWindow::on_start_clicked()
     reset = 0;
     ui->stepLog->clear();
 
+    logFile = new QFile("vw_knob_test_"  + QDateTime::currentDateTime().toString("yyyy-M-dd-hh-mm-ss") + ".txt");
+    logFile->open(QIODevice::WriteOnly | QIODevice::Text);
+    in = new QTextStream(logFile);
 	E_D_Status(false, true, true, false);
 	doAroll();
 }
@@ -173,8 +177,7 @@ void MainWindow::on_reset_clicked()
 
 void MainWindow::fastGo(int ang)
 {
-	//qDebug()<<"isgo " << isGo << " ang " << ang << "min " << min << " hour " << hour;
-	if(ang != 0 && hour == 0 && min == 0 && isGo == 0) {
+    if(ang != 0 && hour == 0 && min == 0 && isGo == 0) {
 		isGo = 1;
 		sw->buildPhaseCmd(ang);
 		emit doPhaseCmd(SETCYC, 800);
@@ -199,27 +202,36 @@ void MainWindow::on_Go_clicked()
 void MainWindow::doAroll()
 {
 	int ang;
-    QString startTime = QDateTime::currentDateTime().toString("yyyy-mm-dd, hh:mm:ss.zzz");
-	QString lastArr = ",ok";
+    QString startTime = QDateTime::currentDateTime().toString("yyyy-M-dd, hh:mm:ss.zzz");
+    QString lastArr = "   -->ok";
+    static QString aLog;
 
 	if(min < angSeq.size()) {
 		ang = angSeq[min]->text().toInt();
 		if(paused == 0) {
-           // qDebug()<<QDateTime::currentDateTime().toString("yy-mm-dd,hh:mm:ss.zzz") << " roll " <<ang << "wait " << pauseSeq[min]->text().toInt();
-			if(ang != 0) {
-				
+            if(ang != 0) {
 
 				if(min == 0) {
-                    QString startLine = startTime + " cycle " + QString::number(hour + 1) + " started";
-                    ui->result->appendPlainText(startLine);
+                    QString startLine ="Cycle " + QString::number(hour + 1) +  ": " + startTime + " Started";
+                    ui->result->appendPlainText(startLine);/////
+                    *in << startLine <<"\n";
+                    //logFile->close();
 				}
-				else
-				ui->result->appendPlainText(startTime + lastArr);
+                else {
+                    ui->result->moveCursor(QTextCursor::End);
+                    ui->result->insertPlainText(lastArr);/////
+                    ui->result->moveCursor(QTextCursor::End);
+                    aLog+=lastArr;
+                    *in<<aLog << "\n";
+                }
+
 				sw->buildPhaseCmd(ang);
+                qDebug()<< STATICWAIT[min] << " + " << pauseSeq[min]->text().toInt() << " =" << STATICWAIT[min] + pauseSeq[min]->text().toInt();
                 emit doPhaseCmd(SETCYC, STATICWAIT[min] + pauseSeq[min]->text().toInt());
-				startTime = QDateTime::currentDateTime().toString("yyyy-mm-dd,hh:mm:ss.zzz");
-				QString angLine = startTime + " roll " + QString::number(ang);
+                startTime = QDateTime::currentDateTime().toString("yyyy-M-dd,hh:mm:ss.zzz");
+                QString angLine = "    " + startTime + " roll " + QString::number(ang);
 				ui->result->appendPlainText(angLine);
+                aLog = angLine;
 				
 				min++;
 			}
@@ -231,17 +243,24 @@ void MainWindow::doAroll()
 	}
 	else {
 		hour++;
-        QString finishLine = QDateTime::currentDateTime().toString("yyyy-mm-dd,hh:mm:ss.zzz") + " cycle " + QString::number(hour) + " has finished";
-        //ui->result->appendPlainText(finishLine);
+       // QString finishLine = QDateTime::currentDateTime().toString("yyyy-M-dd,hh:mm:ss.zzz") + " cycle " + QString::number(hour) + " has finished";
 
 		min = 0;
 		if(hour < ui->cycle->value()) {
             if(reset == 0) {
-				
-				ui->result->appendPlainText(startTime + lastArr);
-			QThread::sleep(3);
+                ui->result->moveCursor(QTextCursor::End);
+                ui->result->insertPlainText(lastArr);
+                ui->result->moveCursor(QTextCursor::End);
+                aLog+=lastArr;
+                *in<<aLog << "\n";
+
+                ui->result->appendPlainText("    Result :OK");
+                ui->result->appendPlainText("");
+                *in << "    Result : OK" << "\n";
+                *in << "" << "\n";
+                //QThread::sleep(3);
                 ui->stepLog->clear();
-			doAroll();
+                doAroll();
 		}
 		else {
                 if(ui->start->isEnabled() == false && ui->pause->isEnabled() == false && ui->reset->isEnabled()==false) {
@@ -255,8 +274,14 @@ void MainWindow::doAroll()
 		}
 		else {
 			
-			ui->result->appendPlainText(startTime + lastArr);
+            ui->result->appendPlainText("    Result :OK");
+            ui->result->appendPlainText("");
+            *in << "    Result : OK" << "\n";
+            *in << "" << "\n";
+            logFile->close();
+
 			doWarning("The test has been finished");
+            logFile->close();
 			E_D_Status(true, false, false, true);
 			min = 0;
 			hour = 0;

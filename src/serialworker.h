@@ -70,6 +70,8 @@ private:
 	unsigned char *cmd;
 	int sec;
 	unsigned char tmpRes[32];
+    void freshSummary(int result);
+
 };
 
 #endif // SERIALWORKER_H

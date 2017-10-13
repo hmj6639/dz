@@ -9,7 +9,8 @@ class QLineEdit;
 class QCheckBox;
 class QStandardItemModel;
 class QMessageBox;
-
+class QFile;
+class QTextStream;
 
 namespace Ui {
 	class MainWindow;
@@ -48,6 +49,8 @@ private:
 	QThread serialWorkerThread;
 	QList <QLineEdit *>angSeq;
     QList <QLineEdit *>pauseSeq;
+    QFile *logFile = NULL;
+            QTextStream *in;
 
 	int checkAng();
 	void E_D_Status(bool, bool, bool, bool);

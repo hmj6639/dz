@@ -310,7 +310,7 @@
                 <string>0~359</string>
                </property>
                <property name="text">
-                <string>Angle Trim</string>
+                <string>Position Correction</string>
                </property>
               </widget>
              </item>
@@ -949,7 +949,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>800</string>
+              <string>500</string>
              </property>
             </widget>
            </item>
@@ -974,7 +974,7 @@
               </size>
              </property>
              <property name="text">
-              <string>800</string>
+              <string>500</string>
              </property>
             </widget>
            </item>
@@ -1112,7 +1112,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>800</string>
+              <string>500</string>
              </property>
             </widget>
            </item>
@@ -1125,7 +1125,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>800</string>
+              <string>500</string>
              </property>
             </widget>
            </item>
@@ -1138,7 +1138,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>800</string>
+              <string>500</string>
              </property>
             </widget>
            </item>
@@ -1151,7 +1151,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>1300</string>
+              <string>500</string>
              </property>
             </widget>
            </item>
@@ -1164,7 +1164,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>1300</string>
+              <string>500</string>
              </property>
             </widget>
            </item>
@@ -1218,7 +1218,7 @@
      <x>0</x>
      <y>0</y>
      <width>876</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>
