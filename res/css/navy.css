@@ -8,6 +8,10 @@ QWidget#frmLogin,QWidget#frmPopup,QWidget#frmHostInfo,QWidget#frmLogout,QWidget#
 	border-radius:5px;
 }
 
+QWidget#centralwidget{
+    background-color: white;
+}
+
 QWidget#widget_title{
 	background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #0F7DBE, stop:1 #1582C3);
 }
@@ -67,6 +71,10 @@ QLineEdit[echoMode="2"] {
 
 .QPushButton:pressed{ 
 	background: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #0F7DBE, stop:1 #1582C3);
+}
+
+.QPushButton:!enabled{
+    background-color: gray;
 }
 
 QPushButton#btnMenu,QPushButton#btnMenu_Min,QPushButton#btnMenu_Max,QPushButton#btnMenu_Close{

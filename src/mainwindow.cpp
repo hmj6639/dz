@@ -103,7 +103,7 @@ void MainWindow::on_start_clicked()
 		qDebug()<<"continue";
 	}
     reset = 0;
-    ui->stepLog->clear();
+    //ui->stepLog->clear();
 
     logFile = new QFile("vw_knob_test_"  + QDateTime::currentDateTime().toString("yyyy-M-dd-hh-mm-ss") + ".txt");
     logFile->open(QIODevice::WriteOnly | QIODevice::Text);
@@ -259,7 +259,7 @@ void MainWindow::doAroll()
                 *in << "    Result : OK" << "\n";
                 *in << "" << "\n";
                 //QThread::sleep(3);
-                ui->stepLog->clear();
+                //ui->stepLog->clear();
                 doAroll();
 		}
 		else {
