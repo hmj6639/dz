@@ -177,7 +177,7 @@ void MainWindow::on_start_clicked()
 		qDebug()<<"continue";
 	}
     reset = 0;
-    ui->stepLog->clear();
+    //ui->stepLog->clear();
 
 	E_D_Status(false, true, true, false);
 	doAroll();
@@ -315,7 +315,7 @@ void MainWindow::doAroll()
 				
 				ui->result->appendPlainText(startTime + lastArr);
 			QThread::sleep(3);
-                ui->stepLog->clear();
+                //ui->stepLog->clear();
 			doAroll();
 		}
 		else {
