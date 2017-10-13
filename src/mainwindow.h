@@ -36,8 +36,28 @@ private slots:
 	void on_btnAdClockwise_clicked();
 	void on_Go_clicked();
 
+private slots:
+    void on_btnMenu_Close_clicked();
+    void on_btnMenu_Max_clicked();
+    void on_btnMenu_Min_clicked();
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
+    void mouseMoveEvent(QMouseEvent *e);
+    void mousePressEvent(QMouseEvent *e);
+    void mouseReleaseEvent(QMouseEvent *);
+
 private:
-	void initSize();
+    void InitStyle();
+
+    QPoint mousePoint;
+    bool mousePressed;
+    bool max;
+    QRect location;
+
+private:
+    void initSize();
+
 	Ui::MainWindow *ui;
 	QMessageBox *msgBox;
 	int hour = 0, min = 0;

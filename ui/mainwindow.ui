@@ -15,8 +15,20 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_7">
-    <item row="0" column="0">
-     <widget class="QWidget" name="widget_title" native="true">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item row="1" column="0">
+     <widget class="QWidget" name="widget_title1" native="true">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
         <horstretch>0</horstretch>
@@ -30,7 +42,7 @@
        </size>
       </property>
       <property name="styleSheet">
-       <string notr="true"/>
+       <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(255, 255, 255, 255));</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,1,2,1,1">
        <property name="leftMargin">
@@ -82,14 +94,24 @@
            <height>60</height>
           </size>
          </property>
+         <property name="font">
+          <font>
+           <family>Sitka Banner</family>
+           <pointsize>24</pointsize>
+           <weight>9</weight>
+           <italic>false</italic>
+           <bold>false</bold>
+          </font>
+         </property>
          <property name="autoFillBackground">
           <bool>false</bool>
          </property>
-         <property name="text">
-          <string/>
+         <property name="styleSheet">
+          <string notr="true">font: 75 24pt &quot;Sitka Banner&quot;;
+color: rgb(0, 85, 127);</string>
          </property>
-         <property name="pixmap">
-          <pixmap resource="../dz.qrc">:/res/images/app-name.png</pixmap>
+         <property name="text">
+          <string>VW KNOB DURABILITY TEST</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>
@@ -128,7 +150,7 @@
       </layout>
      </widget>
     </item>
-    <item row="1" column="0">
+    <item row="2" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
        <number>0</number>
@@ -1210,6 +1232,117 @@
       </widget>
      </widget>
     </item>
+    <item row="0" column="0">
+     <widget class="QWidget" name="widget_title" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>30</height>
+       </size>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="lab_Ico">
+         <property name="minimumSize">
+          <size>
+           <width>30</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lab_Title">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Arial</family>
+           <pointsize>11</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>VW Knob Durability Test 	</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_12">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>549</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnMenu_Min">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="autoDefault">
+          <bool>true</bool>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnMenu_Max">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="autoDefault">
+          <bool>true</bool>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnMenu_Close">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="autoDefault">
+          <bool>true</bool>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -1218,14 +1351,12 @@
      <x>0</x>
      <y>0</y>
      <width>876</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources>
-  <include location="../dz.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
