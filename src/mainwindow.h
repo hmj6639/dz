@@ -11,6 +11,7 @@ class QStandardItemModel;
 class QMessageBox;
 class QFile;
 class QTextStream;
+class QCheckBox;
 
 namespace Ui {
 	class MainWindow;
@@ -36,6 +37,7 @@ private slots:
 	void on_pause_clicked();
 	void on_btnAdClockwise_clicked();
 	void on_Go_clicked();
+    void on_Flog_toggled(bool checked);
 
 private:
 	void initSize();
@@ -43,14 +45,18 @@ private:
 	QMessageBox *msgBox;
 	int hour = 0, min = 0;
 	int paused = 0, isGo = 0;
-    int reset = 0;
+	int reset = 0;
 
 	SerialWorker *sw = NULL;
 	QThread serialWorkerThread;
 	QList <QLineEdit *>angSeq;
-    QList <QLineEdit *>pauseSeq;
-    QFile *logFile = NULL;
-            QTextStream *in;
+	QList <QLineEdit *>pauseSeq;
+	QList <QCheckBox *>doSeq;
+	QList <int> angs;
+	QList <int> durs;
+
+    QFile *logFile = NULL, *logFilef = NULL;
+    QTextStream *in = NULL, *inf = NULL;
 
 	int checkAng();
 	void E_D_Status(bool, bool, bool, bool);
@@ -62,6 +68,8 @@ public 	slots:
 	void doAroll();
 	void rollfinish();
 	void updateVol(int, int);
+    void updateCount(int type, int curent, int acc);
+    void updateSerialLog(QByteArray);
 
 signals:
 	void sendRawData(int, QString);

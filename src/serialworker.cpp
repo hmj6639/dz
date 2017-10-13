@@ -229,7 +229,7 @@ void SerialWorker::run()
 	openDevice(0, "COM1", 38400);
 	doPhaseCmd(0);
 
-    openDevice(1, "COM15", 115200);
+    openDevice(1, "COM6", 115200);
 }
 
 SerialWorker::~SerialWorker()
@@ -484,8 +484,68 @@ void SerialWorker::readSerialData()
 
 	if(sid == 0) 
 		return dealWithPhaseRes(text);
-	else //if(sfd[sid].req_ == 1)
-		return dealWithNavRes(sid, text);
+    /*else //if(sfd[sid].req_ == 1)
+        return dealWithNavRes(sid, text);*/
+    else
+        return dealWithNavSerial(sid, text);
+}
+
+
+void SerialWorker::refind(QByteArray &text)
+{
+    static int acc = 0;
+    static int last = 0;
+
+    QString prefix = "Rotary_Enc: ";
+    if(text.contains("Rotary_Enc: ")) {
+
+       QString Rotary_Enc = text.mid(text.indexOf(prefix));
+       QString left = Rotary_Enc.mid(prefix.size());
+
+       int n = left.toInt();
+       if(n !=0) {
+
+        int type = n * last;
+        if(type < 0)
+            acc = n;
+        else
+            acc+=n;
+        last = n;
+        emit updateCount(type, n, acc);
+       }
+    }
+}
+
+void SerialWorker::dealWithNavSerial(int sid, QByteArray &text)
+{
+    /*static int acc = 0;
+    static int last = 0;*/
+
+    QString prefix = "Rotary_Enc: ";
+
+    if(isFull) {
+        emit updateSerialLog(text);
+    }
+    if(text.contains("Rotary_Enc: ")) {
+
+       /*QString Rotary_Enc = text.mid(text.indexOf(prefix));
+       QString left = Rotary_Enc.mid(prefix.size());
+
+       int n = left.toInt();
+       if(n !=0) {
+
+        int type = n * last;
+        if(type < 0)
+            acc = n;
+        else
+            acc+=n;
+        last = n;
+        emit updateCount(type, n, acc);
+       }*/
+
+        refind(text);
+        text = text.mid(text.indexOf(prefix));
+    }
 }
 
 void SerialWorker::sendRawData(int idx, QString cmd)
