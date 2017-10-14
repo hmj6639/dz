@@ -37,7 +37,7 @@ private slots:
 	void on_pause_clicked();
 	void on_btnAdClockwise_clicked();
 	void on_Go_clicked();
-    void on_Flog_toggled(bool checked);
+	void on_Flog_toggled(bool checked);
 
 private:
 	void initSize();
@@ -55,8 +55,8 @@ private:
 	QList <int> angs;
 	QList <int> durs;
 
-    QFile *logFile = NULL, *logFilef = NULL;
-    QTextStream *in = NULL, *inf = NULL;
+    QFile *logFileMotor = NULL, *logFile[3] = {NULL, NULL, NULL}, *logFilef[3] ={NULL, NULL, NULL};
+    QTextStream *inMotor= NULL, *in[3] = {NULL, NULL, NULL}, *inf[3] = {NULL, NULL, NULL};
 
 	int checkAng();
 	void E_D_Status(bool, bool, bool, bool);
@@ -68,8 +68,8 @@ public 	slots:
 	void doAroll();
 	void rollfinish();
 	void updateVol(int, int);
-    void updateCount(int type, int curent, int acc);
-    void updateSerialLog(QByteArray);
+    void updateCount(int pid, int type, int curent, int acc);
+	void updateSerialLog(int, QByteArray);
 
 signals:
 	void sendRawData(int, QString);

@@ -388,6 +388,9 @@
                <property name="text">
                 <string>Full Log </string>
                </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
             </layout>
@@ -954,7 +957,7 @@
               </size>
              </property>
              <property name="text">
-              <string>45</string>
+              <string>30</string>
              </property>
             </widget>
            </item>
@@ -1276,7 +1279,7 @@
               </sizepolicy>
              </property>
              <property name="text">
-              <string>-405</string>
+              <string>330</string>
              </property>
             </widget>
            </item>

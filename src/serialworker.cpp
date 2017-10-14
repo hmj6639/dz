@@ -196,7 +196,7 @@ void SerialWorker::doPhaseCmd(int step, int w=0)
 	sec = step;
 }
 
-SerialWorker::SerialWorker(QObject *parent) : QObject(parent)
+SerialWorker::SerialWorker(int f, QObject *parent) : QObject(parent),isFull(f)
 {
 }
 
@@ -487,14 +487,14 @@ void SerialWorker::readSerialData()
     /*else //if(sfd[sid].req_ == 1)
         return dealWithNavRes(sid, text);*/
     else
-        return dealWithNavSerial(sid, text);
+        return dealWithNavSerial(sid - 1, text);
 }
 
 
-void SerialWorker::refind(QByteArray &text)
+void SerialWorker::refind(int sid, QByteArray &text)
 {
-    static int acc = 0;
-    static int last = 0;
+    static int acc[4] = {0, 0, 0, 0};
+    static int last[4] = {0, 0, 0, 0};
 
     QString prefix = "Rotary_Enc: ";
     if(text.contains("Rotary_Enc: ")) {
@@ -505,13 +505,13 @@ void SerialWorker::refind(QByteArray &text)
        int n = left.toInt();
        if(n !=0) {
 
-        int type = n * last;
+        int type = n * last[sid];
         if(type < 0)
-            acc = n;
+            acc[sid] = n;
         else
-            acc+=n;
-        last = n;
-        emit updateCount(type, n, acc);
+            acc[sid]+=n;
+        last[sid] = n;
+        emit updateCount(sid, type, n, acc[sid]);
        }
     }
 }
@@ -524,7 +524,7 @@ void SerialWorker::dealWithNavSerial(int sid, QByteArray &text)
     QString prefix = "Rotary_Enc: ";
 
     if(isFull) {
-        emit updateSerialLog(text);
+        emit updateSerialLog(sid, text);
     }
     if(text.contains("Rotary_Enc: ")) {
 
@@ -543,7 +543,7 @@ void SerialWorker::dealWithNavSerial(int sid, QByteArray &text)
         emit updateCount(type, n, acc);
        }*/
 
-        refind(text);
+        refind(sid, text);
         text = text.mid(text.indexOf(prefix));
     }
 }

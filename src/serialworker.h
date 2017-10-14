@@ -34,12 +34,12 @@ class SerialWorker : public QObject
 	Q_OBJECT
 
 public:
-	explicit SerialWorker( QObject *parent = 0);
+    explicit SerialWorker(int, QObject *parent = 0);
 	~SerialWorker();
 	void getAllDevice(QStringList &listDev);
 	void run();
 	void buildPhaseCmd(int gui_ang);
-    void setFulllog(bool n) {isFull = n;}
+	void setFulllog(bool n) {isFull = n;}
 
 public slots:
 	void sendRawData(int, const QString raw);
@@ -50,8 +50,8 @@ signals:
 	void processNav(int, QString res);
 	void rollfinish();
 	void updateVol(int, int);
-    void updateCount(int, int, int);
-    void updateSerialLog(QByteArray);
+    void updateCount(int, int, int, int);
+	void updateSerialLog(int, QByteArray);
 
 
 private slots:
@@ -65,19 +65,19 @@ private:
 
 	void dealWithPhaseRes(QByteArray&);
 	void dealWithNavRes(int, QByteArray &);
-    void dealWithNavSerial(int, QByteArray &);
-    void refind(QByteArray&);
+	void dealWithNavSerial(int, QByteArray &);
+    void refind(int, QByteArray&);
 	int checkPhaseRes();
 	void procRXChar(int sid, unsigned char c);
 	void handleFullData(int sid);
 	void procVol(int pid, QByteArray res);
-    void freshSummary(int result);
+	void freshSummary(int result);
 
 	Serial_FD sfd[MAXCOM];
 	unsigned char *cmd;
 	int sec;
 	unsigned char tmpRes[32];
-    bool isFull = false;
+	bool isFull = false;
 };
 
 #endif // SERIALWORKER_H
