@@ -39,6 +39,8 @@ private slots:
 	void on_Go_clicked();
 	void on_Flog_toggled(bool checked);
 
+    void on_pushButton_clicked();
+
 private:
 	void initSize();
 	Ui::MainWindow *ui;
@@ -46,6 +48,7 @@ private:
 	int hour = 0, min = 0;
 	int paused = 0, isGo = 0;
 	int reset = 0;
+    int count = 0;
 
 	SerialWorker *sw = NULL;
 	QThread serialWorkerThread;

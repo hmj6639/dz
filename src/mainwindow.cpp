@@ -73,8 +73,9 @@ void MainWindow::openDevice()
 
 void MainWindow::rollfinish()
 {
-	if(isGo == 0)
+    if(isGo == 0) {
 		doAroll();
+    }
 	else
 		isGo = 0;
 }
@@ -135,7 +136,10 @@ void MainWindow::on_start_clicked()
 	}
 #endif
 	E_D_Status(false, true, true, false);
-
+  //  ui->pb->setMinimum(0);
+  //  ui->pb->setMaximum(hour);
+   // ui->pb->setValue(0);
+    ui->left->setText("");
 	doAroll();
 }
 
@@ -193,6 +197,7 @@ void MainWindow::on_reset_clicked()
 	paused = 0;
 	hour = 0;
 	min = 0;
+    count=0;
 
 	reset = 1;
 	QList<QAbstractButton *> buttons = msgBox->buttons();
@@ -216,7 +221,7 @@ void MainWindow::on_btnAdClockwise_clicked()
 {
 	int ang = ui->trim->text().toInt();
 
-	fastGo(ang);
+    fastGo(ang);
 }
 
 void MainWindow::on_Go_clicked()
@@ -306,6 +311,9 @@ void MainWindow::doAroll()
                 *inMotor << "    Result : OK" << "\n";
                 *inMotor << "" << "\n";
                 inMotor->flush();
+                count++;
+                ui->left->setText(QString::number(count));
+                //ui->pb->setValue(count);
 				doAroll();
 			}
 		}
@@ -316,7 +324,9 @@ void MainWindow::doAroll()
             *inMotor << "    Result : OK" << "\n";
             *inMotor << "" << "\n";
             logFileMotor->close();
-
+            count++;
+            ui->left->setText(QString::number(count));
+            //ui->pb->setValue(count);
 			doWarning("The test has been finished");
 			E_D_Status(true, false, false, true);
 			min = 0;
@@ -407,4 +417,9 @@ void MainWindow::on_Flog_toggled(bool checked)
 {
 	qDebug()<<checked;
 	sw->setFulllog(checked);
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    ui->left->setText("");
 }
