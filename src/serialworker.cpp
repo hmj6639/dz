@@ -544,7 +544,7 @@ void SerialWorker::dealWithNavSerial(int sid, QByteArray &text)
        }*/
 
         refind(sid, text);
-        text = text.mid(text.indexOf(prefix));
+        text = text.mid(text.indexOf(prefix) + prefix.size());
     }
 }
 
