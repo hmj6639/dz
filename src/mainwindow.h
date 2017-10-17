@@ -25,6 +25,7 @@ public:
 	explicit MainWindow(QWidget *parent = 0);
 	~MainWindow();
 	void doWarning(QString label);
+	void run();
 
 private slots:
 
@@ -39,7 +40,7 @@ private slots:
 	void on_Go_clicked();
 	void on_Flog_toggled(bool checked);
 
-    void on_pushButton_clicked();
+	void on_pushButton_clicked();
 
 private:
 	void initSize();
@@ -48,7 +49,9 @@ private:
 	int hour = 0, min = 0;
 	int paused = 0, isGo = 0;
 	int reset = 0;
-    int count = 0;
+	int count = 0;
+	int maxLogLine = 0;
+	int lc[3] = {0, 0, 0}, fc[3] = {0, 0, 0};
 
 	SerialWorker *sw = NULL;
 	QThread serialWorkerThread;
@@ -57,9 +60,10 @@ private:
 	QList <QCheckBox *>doSeq;
 	QList <int> angs;
 	QList <int> durs;
+	QString *dir= NULL;
 
-    QFile *logFileMotor = NULL, *logFile[3] = {NULL, NULL, NULL}, *logFilef[3] ={NULL, NULL, NULL};
-    QTextStream *inMotor= NULL, *in[3] = {NULL, NULL, NULL}, *inf[3] = {NULL, NULL, NULL};
+	QFile *logFileMotor = NULL, *logFile[3] = {NULL, NULL, NULL}, *logFilef[3] ={NULL, NULL, NULL};
+	QTextStream *inMotor= NULL, *in[3] = {NULL, NULL, NULL}, *inf[3] = {NULL, NULL, NULL};
 
 	int checkAng();
 	void E_D_Status(bool, bool, bool, bool);
@@ -71,7 +75,7 @@ public 	slots:
 	void doAroll();
 	void rollfinish();
 	void updateVol(int, int);
-    void updateCount(int pid, int type, int curent, int acc);
+	void updateCount(int pid, int type, int curent, int acc);
 	void updateSerialLog(int, QByteArray);
 
 signals:

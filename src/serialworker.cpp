@@ -145,7 +145,7 @@ void SerialWorker::doPhaseCmd(int step, int w=0)
 		rollPause = w;
 		// qDebug()<< "step " << step << " wait " << rollPause;
 	}
-   qDebug()<<"do step " << step;
+	qDebug()<<"do step " << step;
 	switch(step) {	
 		case ENABLEPHASE:
 			cmd = bufEng;
@@ -167,30 +167,30 @@ void SerialWorker::doPhaseCmd(int step, int w=0)
 			len = sizeof(bufAng) / sizeof(bufAng[0]);
 			break;
 
-        case STARTR:
+		case STARTR:
 			cmd = bufSta;
 			len = sizeof(bufSta) / sizeof(bufSta[0]);
 			break;
 
-        case STOPR:
-            cmd = bufSto;
-            len = sizeof(bufSto) / sizeof(bufSto[0]);
+		case STOPR:
+			cmd = bufSto;
+			len = sizeof(bufSto) / sizeof(bufSto[0]);
 			break;
 
 		case CHECKARR:
-            cmd = bufArr;
-            len = sizeof(bufArr) / sizeof(bufArr[0]);
-            //break;
+			cmd = bufArr;
+			len = sizeof(bufArr) / sizeof(bufArr[0]);
+			//break;
 
 		case OVERROLL:
-            qDebug()<<"next ang is after " << rollPause;
+			qDebug()<<"next ang is after " << rollPause;
 			QTimer::singleShot(rollPause, this, [=](){
 					emit rollfinish();});
 
 		default:
 			return;
 	}
-    //dumpBuf(sec, cmd, len);
+	//dumpBuf(sec, cmd, len);
 	memset(tmpRes, 0, sizeof(tmpRes));
 	sfd[COM_PHASE].serial->write((const char *)cmd, len);
 	sec = step;
@@ -217,7 +217,7 @@ void SerialWorker::openDevice(int sid, QString tryDev, int rate)
 		if (ports.at(i).portName() == tryDev) {
 
 			portInfo = ports.at(i);
-			qDebug()<<"try      "<< sid << "   " <<tryDev;
+			qDebug()<<"try	  "<< sid << "   " <<tryDev;
 			setSerialPort(sid, &portInfo, rate);
 			break;
 		}
@@ -229,7 +229,9 @@ void SerialWorker::run()
 	openDevice(0, "COM1", 38400);
 	doPhaseCmd(0);
 
-    openDevice(1, "COM6", 115200);
+    openDevice(1, "COM17", 115200);
+	openDevice(2, "COM16", 115200);
+    openDevice(3, "COM18", 115200);
 }
 
 SerialWorker::~SerialWorker()
@@ -313,18 +315,18 @@ int SerialWorker::checkPhaseRes()
 			resLen = sizeof(phaseAngRes) / sizeof(phaseAngRes[0]);
 			break;
 
-        case(STARTR):
+		case(STARTR):
 			res = phaseStaRes;
 			resLen = sizeof(phaseStaRes) / sizeof(phaseStaRes[0]);
 			break;
 
-        case STOPR:
-            res = phaseStoRes;
-            resLen = sizeof(phaseStoRes) / sizeof(phaseStoRes[0]);
-            break;
+		case STOPR:
+			res = phaseStoRes;
+			resLen = sizeof(phaseStoRes) / sizeof(phaseStoRes[0]);
+			break;
 
-        case(CHECKARR):
-            return 0;
+		case(CHECKARR):
+			return 0;
 
 		default:
 			return -1;
@@ -353,14 +355,14 @@ void SerialWorker::dealWithPhaseRes(QByteArray &text)
 	tmpRes[0]+= text.size();
 
 	if(checkPhaseRes() != 0) {
-        qDebug()<<"wrong at " << sec << " " << text.toHex();
+		qDebug()<<"wrong at " << sec << " " << text.toHex();
 		return;
 	}
 
 #if 1
-    qDebug()<<sec <<" phase back " << text.toHex();
-    //for(int i= 1; i <= tmpRes[0]; i++)
-    //	qDebug()<< QString("%1").arg(tmpRes[i] , 0, 16);
+	qDebug()<<sec <<" phase back " << text.toHex();
+	//for(int i= 1; i <= tmpRes[0]; i++)
+	//	qDebug()<< QString("%1").arg(tmpRes[i] , 0, 16);
 #endif
 
 	if(sec != SETTYPE)
@@ -433,7 +435,7 @@ void SerialWorker::procVol(int pid, QByteArray res)
 
 void SerialWorker::handleFullData(int sid)
 {
-   // qDebug()<< sfd[sid].res.toHex();
+	// qDebug()<< sfd[sid].res.toHex();
 	unsigned char c[5];
 
 	for(int i = 0; i < 5; i++) {
@@ -446,7 +448,7 @@ void SerialWorker::handleFullData(int sid)
 		// qDebug()<<id[0] << id[1] << id[2] << id[3];
 		return;
 	}
-    //qDebug()<< sfd[sid].res.toHex();
+	//qDebug()<< sfd[sid].res.toHex();
 	if((c[0] & 0xf8) == 0x50) {//can 1
 		//qDebug()<<"can 1 " << sfd[sid].res.toHex();
 
@@ -484,68 +486,68 @@ void SerialWorker::readSerialData()
 
 	if(sid == 0) 
 		return dealWithPhaseRes(text);
-    /*else //if(sfd[sid].req_ == 1)
-        return dealWithNavRes(sid, text);*/
-    else
-        return dealWithNavSerial(sid - 1, text);
+	/*else //if(sfd[sid].req_ == 1)
+	  return dealWithNavRes(sid, text);*/
+	else
+		return dealWithNavSerial(sid - 1, text);
 }
 
 
 void SerialWorker::refind(int sid, QByteArray &text)
 {
-    static int acc[4] = {0, 0, 0, 0};
-    static int last[4] = {0, 0, 0, 0};
+	static int acc[4] = {0, 0, 0, 0};
+	static int last[4] = {0, 0, 0, 0};
 
-    QString prefix = "Rotary_Enc: ";
-    if(text.contains("Rotary_Enc: ")) {
+	QString prefix = "Rotary_Enc: ";
+	if(text.contains("Rotary_Enc: ")) {
 
-       QString Rotary_Enc = text.mid(text.indexOf(prefix));
-       QString left = Rotary_Enc.mid(prefix.size());
+		QString Rotary_Enc = text.mid(text.indexOf(prefix));
+		QString left = Rotary_Enc.mid(prefix.size());
 
-       int n = left.toInt();
-       if(n !=0) {
+		int n = left.toInt();
+		if(n !=0) {
 
-        int type = n * last[sid];
-        if(type < 0)
-            acc[sid] = n;
-        else
-            acc[sid]+=n;
-        last[sid] = n;
-        emit updateCount(sid, type, n, acc[sid]);
-       }
-    }
+			int type = n * last[sid];
+			if(type < 0)
+				acc[sid] = n;
+			else
+				acc[sid]+=n;
+			last[sid] = n;
+			emit updateCount(sid, type, n, acc[sid]);
+		}
+	}
 }
 
 void SerialWorker::dealWithNavSerial(int sid, QByteArray &text)
 {
-    /*static int acc = 0;
-    static int last = 0;*/
+	/*static int acc = 0;
+	  static int last = 0;*/
 
-    QString prefix = "Rotary_Enc: ";
+	QString prefix = "Rotary_Enc: ";
 
-    if(isFull) {
-        emit updateSerialLog(sid, text);
-    }
-    if(text.contains("Rotary_Enc: ")) {
+	if(isFull) {
+		emit updateSerialLog(sid, text);
+	}
+	if(text.contains("Rotary_Enc: ")) {
 
-       /*QString Rotary_Enc = text.mid(text.indexOf(prefix));
-       QString left = Rotary_Enc.mid(prefix.size());
+		/*QString Rotary_Enc = text.mid(text.indexOf(prefix));
+		  QString left = Rotary_Enc.mid(prefix.size());
 
-       int n = left.toInt();
-       if(n !=0) {
+		  int n = left.toInt();
+		  if(n !=0) {
 
-        int type = n * last;
-        if(type < 0)
-            acc = n;
-        else
-            acc+=n;
-        last = n;
-        emit updateCount(type, n, acc);
-       }*/
+		  int type = n * last;
+		  if(type < 0)
+		  acc = n;
+		  else
+		  acc+=n;
+		  last = n;
+		  emit updateCount(type, n, acc);
+		  }*/
 
-        refind(sid, text);
-        text = text.mid(text.indexOf(prefix) + prefix.size());
-    }
+		refind(sid, text);
+		text = text.mid(text.indexOf(prefix) + prefix.size());
+	}
 }
 
 void SerialWorker::sendRawData(int idx, QString cmd)

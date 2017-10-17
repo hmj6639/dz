@@ -23,8 +23,8 @@ enum phase{
 	SETTYPE,
 	SETCYC,
 	SETANG,
-    STARTR,
-    STOPR,
+	STARTR,
+	STOPR,
 	CHECKARR,
 	OVERROLL
 };
@@ -34,7 +34,7 @@ class SerialWorker : public QObject
 	Q_OBJECT
 
 public:
-    explicit SerialWorker(int, QObject *parent = 0);
+	explicit SerialWorker(int, QObject *parent = 0);
 	~SerialWorker();
 	void getAllDevice(QStringList &listDev);
 	void run();
@@ -50,7 +50,7 @@ signals:
 	void processNav(int, QString res);
 	void rollfinish();
 	void updateVol(int, int);
-    void updateCount(int, int, int, int);
+	void updateCount(int, int, int, int);
 	void updateSerialLog(int, QByteArray);
 
 
@@ -66,7 +66,7 @@ private:
 	void dealWithPhaseRes(QByteArray&);
 	void dealWithNavRes(int, QByteArray &);
 	void dealWithNavSerial(int, QByteArray &);
-    void refind(int, QByteArray&);
+	void refind(int, QByteArray&);
 	int checkPhaseRes();
 	void procRXChar(int sid, unsigned char c);
 	void handleFullData(int sid);
