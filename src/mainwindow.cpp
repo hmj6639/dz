@@ -15,7 +15,8 @@
 //int STATICWAIT[] = {1500, 3800, 2800, 3800, 2800, 3800, 7500};
 
 
-int STATICWAIT[] = {1200, 2100, 1500, 2100, 1500, 2100, 3500};
+int STATICWAIT[] = {1500, 3800, 2500, 3800, 2500, 3800, 6500};//slow
+//int STATICWAIT[] = {1200, 2100, 1500, 2100, 1500, 2100, 3500};//fast
 QString RESULTOK = "    Result : OK";
 
 void MainWindow::initSize()
@@ -50,18 +51,14 @@ void MainWindow::initSize()
 	pauseSeq << ui->c1 << ui->c2 << ui->c3<< ui->c4 << ui->c5 << ui->c6 << ui->c7;
 	doSeq << ui->k1 << ui->k2 << ui->k3 << ui->k4 << ui->k5 << ui->k6 << ui->k7;
 
-	return;
-}
-
-void MainWindow::run()
-{
 	openDevice();
-	doWarning("Please make sure the following two actions before the test.\n\n 1: Tune the lever to the start point.\n 2: Turn the volumn to 0.");
+	return;
 }
 
 void MainWindow::openDevice()
 {
 	sw = new SerialWorker(ui->Flog->isChecked());
+	//sw->getAllDevice();
 	sw->moveToThread(&serialWorkerThread);
 	connect(&serialWorkerThread, &QThread::started, sw, &SerialWorker::run);
 	connect(this, &MainWindow::sendRawData, sw, &SerialWorker::sendRawData);
@@ -72,14 +69,18 @@ void MainWindow::openDevice()
 	connect(sw, &SerialWorker::updateCount, this, &MainWindow::updateCount);
 	connect(sw, &SerialWorker::updateSerialLog, this, &MainWindow::updateSerialLog);
 	connect(&serialWorkerThread, &QThread::finished, sw, &QObject::deleteLater);
+}
+
+void MainWindow::run()
+{
 	serialWorkerThread.start();
+	doWarning("Please make sure the following two actions before the test.\n\n 1: Tune the lever to the start point.\n 2: Turn the volumn to 0.");
 }
 
 void MainWindow::rollfinish()
 {
-	if(isGo == 0) {
+	if(isGo == 0)
 		doAroll();
-	}
 	else
 		isGo = 0;
 }
@@ -90,7 +91,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 	ui->setupUi(this);
 	initSize();
-    maxLogLine = 500000;
+	maxLogLine = 500000;
 }
 
 MainWindow::~MainWindow()
@@ -137,7 +138,7 @@ void MainWindow::on_start_clicked()
 	dir = new QString("vw_knob_test_" + QDateTime::currentDateTime().toString("yyyy-M-dd--hh-mm-ss") + "/");
 	QDir().mkdir(*dir);
 	if(logFileMotor == NULL && inMotor == NULL) {
-	 	logFileMotor = new QFile(*dir + "Motor" + ".txt");
+		logFileMotor = new QFile(*dir + "Motor" + ".txt");
 		logFileMotor->open(QIODevice::WriteOnly | QIODevice::Text);
 		inMotor = new QTextStream(logFileMotor);
 		for(int i = 0; i < 3; i++)
@@ -146,10 +147,11 @@ void MainWindow::on_start_clicked()
 #endif
 
 	E_D_Status(false, true, true, false);
-	//ui->pb->setMinimum(0);
-	//ui->pb->setMaximum(hour);
-	// ui->pb->setValue(0);
-	ui->left->setText("");
+	ui->pb->setRange(0, ui->cycle->value());
+	ui->pb->setValue(0);
+	ui->left->setText(QString::number(ui->cycle->value()));
+	ui->lblTotalNbr->setText(QString::number(ui->cycle->value()));
+
 	doAroll();
 }
 
@@ -170,7 +172,7 @@ int MainWindow::checkAng()
 	for(int i = 0; i < angSeq.size(); i++) {
 		int ang = angSeq[i]->text().toInt();
 		/*if(ang == 0 || ang > 359 || ang < -359)
-		return 1;*/
+		  return 1;*/
 		total+=ang;
 	}
 
@@ -205,8 +207,8 @@ void MainWindow::on_reset_clicked()
 {
 	E_D_Status(false, false, false, false);
 	paused = 0;
-    //hour = 0;
-    //min = 0;
+	//hour = 0;
+	//min = 0;
 	count=0;
 
 	reset = 1;
@@ -221,12 +223,12 @@ void MainWindow::fastGo(int ang)
 	if(ang != 0 && hour == 0 && min == 0 && isGo == 0) {
 		isGo = 1;
 		sw->buildPhaseCmd(ang);
-		emit doPhaseCmd(SETCYC, 800);
+		emit doPhaseCmd(SETCYC, 1000);
 	}
-    else {
-        qDebug()<<ang << hour << min << isGo;
+	else {
+		qDebug()<<ang << hour << min << isGo;
 		doWarning("Please stop the Test");
-    }
+	}
 }
 
 void MainWindow::on_btnAdClockwise_clicked()
@@ -250,24 +252,6 @@ void MainWindow::doAroll()
 	QString lastArr = "   -->ok";
 	static QString aLog;
 
-#if 0
-	if(reset == 1) {
-		if(ui->start->isEnabled() == false && ui->pause->isEnabled() == false && ui->reset->isEnabled()==false) {
-			QList<QAbstractButton *> buttons = msgBox->buttons();
-			if(buttons.size() > 0)
-				buttons[0]->setEnabled(true);
-			msgBox->setText("Please re-calibrate the device and continue");
-			E_D_Status(true, false, false, true);
-		}
-		reset = 0;
-		ui->result->appendPlainText(RESULTOK);
-		ui->result->appendPlainText("");
-		*inMotor << RESULTOK << "\n";
-		*inMotor << "" << "\n";
-		logFileMotor->close();
-		return;
-	}
-#endif
 	if(min < angs.size()) {
 		ang = angs[min];
 		if(paused == 0) {
@@ -277,28 +261,28 @@ void MainWindow::doAroll()
 					QString startLine ="Cycle " + QString::number(hour + 1) + ": " + startTime + " Started";
 					ui->result->appendPlainText(startLine);/////
 					*inMotor << startLine <<"\n";
-                    {
-                        if(hour == 0) {
-                            logFile[0] = new QFile(*dir + "Product_A_" + "_shift" + ".txt");
-                            logFile[0]->open(QIODevice::WriteOnly | QIODevice::Text);
-                            in[0] = new QTextStream(logFile[0]);
+					{
+						if(hour == 0) {
+							logFile[0] = new QFile(*dir + "Product_A_" + "_shift" + ".txt");
+							logFile[0]->open(QIODevice::WriteOnly | QIODevice::Text);
+							in[0] = new QTextStream(logFile[0]);
 
-                            logFile[1] = new QFile(*dir + "Product_B_" + "_shift" + ".txt");
-                            logFile[1]->open(QIODevice::WriteOnly | QIODevice::Text);
-                            in[1] = new QTextStream(logFile[1]);
+							logFile[1] = new QFile(*dir + "Product_B_" + "_shift" + ".txt");
+							logFile[1]->open(QIODevice::WriteOnly | QIODevice::Text);
+							in[1] = new QTextStream(logFile[1]);
 
-                            logFile[2] = new QFile(*dir + "Product_C_" + "_shift" + ".txt");
-                            logFile[2]->open(QIODevice::WriteOnly | QIODevice::Text);
-                            in[2] = new QTextStream(logFile[2]);
-                        }
+							logFile[2] = new QFile(*dir + "Product_C_" + "_shift" + ".txt");
+							logFile[2]->open(QIODevice::WriteOnly | QIODevice::Text);
+							in[2] = new QTextStream(logFile[2]);
+						}
 
-                        if(in[0] && logFile[0])
-                            *in[0] << startLine << "\n";
-                        if(in[1] && logFile[1])
-                            *in[1] << startLine << "\n";
-                        if(in[2] && logFile[2])
-                            *in[2] << startLine << "\n";
-                    }
+						if(in[0] && logFile[0])
+							*in[0] << startLine << "\n";
+						if(in[1] && logFile[1])
+							*in[1] << startLine << "\n";
+						if(in[2] && logFile[2])
+							*in[2] << startLine << "\n";
+					}
 				}
 				else {
 					ui->result->moveCursor(QTextCursor::End);
@@ -333,8 +317,8 @@ void MainWindow::doAroll()
 		hour++;
 		min = 0;
 
-        if(hour % 200 == 0)
-            ui->result->clear();
+		if(hour % 200 == 0)
+			ui->result->clear();
 
 		if(hour < ui->cycle->value()) {
 			if(reset == 0) {
@@ -350,27 +334,27 @@ void MainWindow::doAroll()
 				*inMotor << "" << "\n";
 				inMotor->flush();
 				count++;
-                ui->left->setText(QString::number(ui->cycle->value() - count));
-				//ui->pb->setValue(count);
+				ui->left->setText(QString::number(ui->cycle->value() - count));
+				ui->pb->setValue(count);
 				doAroll();
 			}
-            else {
-                if(ui->start->isEnabled() == false && ui->pause->isEnabled() == false && ui->reset->isEnabled()==false) {
-                    QList<QAbstractButton *> buttons = msgBox->buttons();
-                    if(buttons.size() > 0)
-                        buttons[0]->setEnabled(true);
-                    msgBox->setText("Please re-calibrate the device and continue");
-                    E_D_Status(true, false, false, true);
-                }
-                reset = 0;
-                hour = 0;
-                ui->result->appendPlainText(RESULTOK);
-                ui->result->appendPlainText("");
-                *inMotor << RESULTOK << "\n";
-                *inMotor << "" << "\n";
-                logFileMotor->close();
-                return;
-            }
+			else {
+				if(ui->start->isEnabled() == false && ui->pause->isEnabled() == false && ui->reset->isEnabled()==false) {
+					QList<QAbstractButton *> buttons = msgBox->buttons();
+					if(buttons.size() > 0)
+						buttons[0]->setEnabled(true);
+					msgBox->setText("Please re-calibrate the device and continue");
+					E_D_Status(true, false, false, true);
+				}
+				reset = 0;
+				hour = 0;
+				ui->result->appendPlainText(RESULTOK);
+				ui->result->appendPlainText("");
+				*inMotor << RESULTOK << "\n";
+				*inMotor << "" << "\n";
+				logFileMotor->close();
+				return;
+			}
 		}
 		else {
 
@@ -380,8 +364,8 @@ void MainWindow::doAroll()
 			*inMotor << "" << "\n";
 			logFileMotor->close();
 			count++;
-            ui->left->setText(0);
-			//ui->pb->setValue(count);
+			ui->left->setText(0);
+			ui->pb->setValue(count);
 			doWarning("The test has been finished");
 			E_D_Status(true, false, false, true);
 			min = 0;
@@ -412,13 +396,8 @@ void MainWindow::updateCount(int pid, int type, int current, int acc)
 			pre = "Product_B_";
 		else
 			pre = "Product_C_";
-
-        /*logFile[pid] = new QFile(*dir + pre + "_shift" + ".txt");
-		logFile[pid]->open(QIODevice::WriteOnly | QIODevice::Text);
-        in[pid] = new QTextStream(logFile[pid]);*/
 	}
 
-	//ui->result->appendPlainText("rotation count is " + QString::number(current) + "  ---   "  +  QString::number(acc));
 	if(type < 0 && in[pid]) {
 		*in[pid] << QString::number(last[pid]) << "\n";
 		in[pid]->flush();

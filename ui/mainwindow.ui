@@ -538,6 +538,9 @@
                  <height>16777215</height>
                 </size>
                </property>
+               <property name="maximum">
+                <number>50000</number>
+               </property>
                <property name="value">
                 <number>0</number>
                </property>

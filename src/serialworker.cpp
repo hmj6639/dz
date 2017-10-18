@@ -226,12 +226,16 @@ void SerialWorker::openDevice(int sid, QString tryDev, int rate)
 
 void SerialWorker::run()
 {
+#ifdef Q_OS_LINUX
+	openDevice(0, "ttyUSB0", 115200);
+#else
 	openDevice(0, "COM1", 38400);
 	doPhaseCmd(0);
 
-    openDevice(1, "COM17", 115200);
+	openDevice(1, "COM17", 115200);
 	openDevice(2, "COM16", 115200);
-    openDevice(3, "COM18", 115200);
+	openDevice(3, "COM18", 115200);
+#endif
 }
 
 SerialWorker::~SerialWorker()
