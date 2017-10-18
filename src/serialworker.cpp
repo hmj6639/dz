@@ -178,8 +178,8 @@ void SerialWorker::doPhaseCmd(int step, int w=0)
 			break;
 
 		case CHECKARR:
-			cmd = bufArr;
-			len = sizeof(bufArr) / sizeof(bufArr[0]);
+			//cmd = bufArr;
+			//len = sizeof(bufArr) / sizeof(bufArr[0]);
 			//break;
 
 		case OVERROLL:

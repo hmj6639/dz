@@ -31,9 +31,9 @@ private slots:
 
 	void on_start_clicked();
 	void on_reset_clicked();
-	void on_all_clicked();
+	/*void on_all_clicked();
 	void on_ok_clicked();
-	void on_nok_clicked();
+	void on_nok_clicked();*/
 	void modeSwitch(int);
 	void on_pause_clicked();
 	void on_btnAdClockwise_clicked();

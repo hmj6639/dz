@@ -382,6 +382,7 @@ void MainWindow::updateVol(int pid, int vol)
 
 void MainWindow::updateCount(int pid, int type, int current, int acc)
 {
+	Q_UNUSED(current);
 	static int last[3] = {0, 0, 0};
 	QString pre;
 
@@ -455,6 +456,7 @@ void MainWindow::modeSwitch(int /*mode*/)
 	  ui->tv->setColumnWidth(i, cwidth[i]);*/
 }
 
+#if 0
 void MainWindow::on_all_clicked()
 {
 	modeSwitch(0);
@@ -469,6 +471,7 @@ void MainWindow::on_nok_clicked()
 {
 	modeSwitch(1);
 }
+#endif
 
 void MainWindow::on_Flog_toggled(bool checked)
 {
