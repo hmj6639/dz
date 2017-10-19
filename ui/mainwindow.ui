@@ -270,6 +270,9 @@
               <layout class="QHBoxLayout" name="horizontalLayout_4">
                <item>
                 <widget class="QPushButton" name="start">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -1312,7 +1315,7 @@
      <x>0</x>
      <y>0</y>
      <width>876</width>
-     <height>23</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>

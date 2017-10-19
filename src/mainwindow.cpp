@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "dialogconfig.h"
 
 #include <QDesktopWidget>
 #include <QFontDatabase>
@@ -44,6 +45,7 @@ void MainWindow::initSize()
 	int w = h * 16 / 10;
 	resize(w, h);
 	setIconSize(QSize(16, 16));
+	dc = new DialogConfig(this);
 	msgBox = new QMessageBox(this);
 	msgBox->setWindowTitle("Warning");
 
@@ -55,34 +57,59 @@ void MainWindow::initSize()
 	return;
 }
 
+void MainWindow::freshSerial()
+{
+	QStringList devs;
+	sw->getAllDevice(devs);
+#ifdef Q_OS_LINUX
+	devs.removeOne("tnt0");
+	devs.removeOne("tnt1");
+	devs.removeOne("tnt2");
+	devs.removeOne("tnt4");
+	devs.removeOne("tnt6");
+#else
+	devs.removeOne("COM1");
+#endif
+	dc->setInterface(devs);
+}
+
 void MainWindow::openDevice()
 {
 	sw = new SerialWorker(ui->Flog->isChecked());
-	//sw->getAllDevice();
+	freshSerial();
 	sw->moveToThread(&serialWorkerThread);
 	connect(&serialWorkerThread, &QThread::started, sw, &SerialWorker::run);
 	connect(this, &MainWindow::sendRawData, sw, &SerialWorker::sendRawData);
 	connect(this, &MainWindow::doPhaseCmd, sw, &SerialWorker::doPhaseCmd);
-	////connect(sw, &SerialWorker::processNav, this, &MainWindow::processNavRes);
+	connect(this, &MainWindow::openProduct, sw, &SerialWorker::openProduct, Qt::QueuedConnection);
 	connect(sw, &SerialWorker::rollfinish, this, &MainWindow::rollfinish);
 	connect(sw, &SerialWorker::updateVol, this, &MainWindow::updateVol);
 	connect(sw, &SerialWorker::updateCount, this, &MainWindow::updateCount);
 	connect(sw, &SerialWorker::updateSerialLog, this, &MainWindow::updateSerialLog);
 	connect(&serialWorkerThread, &QThread::finished, sw, &QObject::deleteLater);
+	serialWorkerThread.start();
 }
 
 void MainWindow::run()
 {
-	serialWorkerThread.start();
 	doWarning("Please make sure the following two actions before the test.\n\n 1: Tune the lever to the start point.\n 2: Turn the volumn to 0.");
+	dc->exec();
+}
+
+void MainWindow::angTrim(bool a, bool b)
+{
+	ui->btnAdClockwise->setEnabled(a);
+	ui->Go->setEnabled(b);
 }
 
 void MainWindow::rollfinish()
 {
 	if(isGo == 0)
 		doAroll();
-	else
+	else {
+		angTrim(true, true);
 		isGo = 0;
+	}
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -96,9 +123,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-	delete ui;
 	serialWorkerThread.quit();
 	serialWorkerThread.wait();
+	delete ui;
 }
 
 void MainWindow::on_start_clicked()
@@ -117,6 +144,7 @@ void MainWindow::on_start_clicked()
 		paused = 0;
 		qDebug()<<"continue";
 		E_D_Status(false, true, true, false);
+		angTrim(false, false);
 		doAroll();
 		return;
 	}
@@ -152,6 +180,7 @@ void MainWindow::on_start_clicked()
 	ui->left->setText(QString::number(ui->cycle->value()));
 	ui->lblTotalNbr->setText(QString::number(ui->cycle->value()));
 
+	angTrim(false, false);
 	doAroll();
 }
 
@@ -200,6 +229,8 @@ void MainWindow::E_D_Status(bool s, bool p, bool r, bool c)
 void MainWindow::on_pause_clicked()
 {
 	E_D_Status(true, false, true, true);
+
+	angTrim(false, false);
 	paused = 1;
 }
 
@@ -210,8 +241,9 @@ void MainWindow::on_reset_clicked()
 	//hour = 0;
 	//min = 0;
 	count=0;
-
 	reset = 1;
+
+	angTrim(false, false);
 	QList<QAbstractButton *> buttons = msgBox->buttons();
 	if(buttons.size() > 0)
 		buttons[0]->setEnabled(false);
@@ -220,7 +252,9 @@ void MainWindow::on_reset_clicked()
 
 void MainWindow::fastGo(int ang)
 {
-	if(ang != 0 && hour == 0 && min == 0 && isGo == 0) {
+	if(ang != 0 && /*hour == 0 && min == 0 && */isGo == 0) {
+
+		angTrim(false, false);
 		isGo = 1;
 		sw->buildPhaseCmd(ang);
 		emit doPhaseCmd(SETCYC, 1000);
@@ -249,68 +283,69 @@ void MainWindow::doAroll()
 {
 	int ang;
 	QString startTime = QDateTime::currentDateTime().toString("yyyy-M-dd, hh:mm:ss.zzz");
-	QString lastArr = "   -->ok";
+	QString lastArr = "\t\t\t-->ok";
 	static QString aLog;
+
+	if(paused == 1) {
+		angTrim(true, true);
+		return;
+	}
 
 	if(min < angs.size()) {
 		ang = angs[min];
-		if(paused == 0) {
-			if(ang != 0) {
+		if(ang != 0) {
 
-				if(min == 0) {
-					QString startLine ="Cycle " + QString::number(hour + 1) + ": " + startTime + " Started";
-					ui->result->appendPlainText(startLine);/////
-					*inMotor << startLine <<"\n";
-					{
-						if(hour == 0) {
-							logFile[0] = new QFile(*dir + "Product_A_" + "_shift" + ".txt");
-							logFile[0]->open(QIODevice::WriteOnly | QIODevice::Text);
-							in[0] = new QTextStream(logFile[0]);
+			if(min == 0) {
+				QString startLine ="Cycle " + QString::number(hour + 1) + ": " + startTime + " Started";
+				ui->result->appendPlainText(startLine);/////
+				*inMotor << startLine <<"\n";
+				if(hour == 0) {
+					logFile[0] = new QFile(*dir + "Product_A_" + "_shift" + ".txt");
+					logFile[0]->open(QIODevice::WriteOnly | QIODevice::Text);
+					in[0] = new QTextStream(logFile[0]);
 
-							logFile[1] = new QFile(*dir + "Product_B_" + "_shift" + ".txt");
-							logFile[1]->open(QIODevice::WriteOnly | QIODevice::Text);
-							in[1] = new QTextStream(logFile[1]);
+					logFile[1] = new QFile(*dir + "Product_B_" + "_shift" + ".txt");
+					logFile[1]->open(QIODevice::WriteOnly | QIODevice::Text);
+					in[1] = new QTextStream(logFile[1]);
 
-							logFile[2] = new QFile(*dir + "Product_C_" + "_shift" + ".txt");
-							logFile[2]->open(QIODevice::WriteOnly | QIODevice::Text);
-							in[2] = new QTextStream(logFile[2]);
-						}
-
-						if(in[0] && logFile[0])
-							*in[0] << startLine << "\n";
-						if(in[1] && logFile[1])
-							*in[1] << startLine << "\n";
-						if(in[2] && logFile[2])
-							*in[2] << startLine << "\n";
-					}
+					logFile[2] = new QFile(*dir + "Product_C_" + "_shift" + ".txt");
+					logFile[2]->open(QIODevice::WriteOnly | QIODevice::Text);
+					in[2] = new QTextStream(logFile[2]);
 				}
-				else {
-					ui->result->moveCursor(QTextCursor::End);
-					ui->result->insertPlainText(lastArr);/////
-					ui->result->moveCursor(QTextCursor::End);
-					aLog+=lastArr;
-					*inMotor<<aLog << "\n";
-				}
-				inMotor->flush();
 
-				sw->buildPhaseCmd(ang);
-				qDebug()<< durs[min];
-				emit doPhaseCmd(SETCYC, durs[min]);
-				startTime = QDateTime::currentDateTime().toString("yyyy-M-dd,hh:mm:ss.zzz");
-				QString angLine = "    " + startTime + " roll " + QString::number(ang);
-				if(min == 0 || min == angs.size() -2)
-					angLine += " and press";
-				if(min == angs.size() -1)
-					angLine += " and return to start point";
-				ui->result->appendPlainText(angLine);
-				aLog = angLine;
-
-				min++;
+				if(in[0] && logFile[0])
+					*in[0] << startLine << "\n";
+				if(in[1] && logFile[1])
+					*in[1] << startLine << "\n";
+				if(in[2] && logFile[2])
+					*in[2] << startLine << "\n";
 			}
 			else {
-				min++;
-				doAroll();
+				ui->result->moveCursor(QTextCursor::End);
+				ui->result->insertPlainText(lastArr);/////
+				ui->result->moveCursor(QTextCursor::End);
+				aLog+=lastArr;
+				*inMotor<<aLog << "\n";
 			}
+			inMotor->flush();
+
+			sw->buildPhaseCmd(ang);
+			qDebug()<< durs[min];
+			emit doPhaseCmd(SETCYC, durs[min]);
+			startTime = QDateTime::currentDateTime().toString("yyyy-M-dd,hh:mm:ss.zzz");
+			QString angLine = "    " + startTime + " roll " + QString::number(ang);
+			if(min == 0 || min == angs.size() -2)
+				angLine += " and press";
+			if(min == angs.size() -1)
+				angLine += " and return to start point";
+			ui->result->appendPlainText(angLine);
+			aLog = angLine;
+
+			min++;
+		}
+		else {
+			min++;
+			doAroll();
 		}
 	}
 	else {
@@ -345,6 +380,7 @@ void MainWindow::doAroll()
 						buttons[0]->setEnabled(true);
 					msgBox->setText("Please re-calibrate the device and continue");
 					E_D_Status(true, false, false, true);
+					angTrim(true, true);
 				}
 				reset = 0;
 				hour = 0;
@@ -368,6 +404,7 @@ void MainWindow::doAroll()
 			ui->pb->setValue(count);
 			doWarning("The test has been finished");
 			E_D_Status(true, false, false, true);
+			angTrim(true, true);
 			min = 0;
 			hour = 0;
 		}
@@ -482,4 +519,10 @@ void MainWindow::on_Flog_toggled(bool checked)
 void MainWindow::on_pushButton_clicked()
 {
 	ui->left->setText("");
+}
+
+void MainWindow::setSerial(QStringList &dev)
+{
+	emit openProduct(dev);
+	ui->start->setEnabled(true);
 }

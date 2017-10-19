@@ -5,3 +5,5 @@ cscope.out
 .*.swp
 .swp
 *.o
+vwsimulator
+vw_knob_test*

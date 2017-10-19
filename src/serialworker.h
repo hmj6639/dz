@@ -13,7 +13,6 @@
 
 typedef struct {
 	QSerialPort *serial = NULL;
-	int req_ = 0;
 	QByteArray res;
 	unsigned char  ffFlag;
 }Serial_FD;
@@ -40,19 +39,20 @@ public:
 	void run();
 	void buildPhaseCmd(int gui_ang);
 	void setFulllog(bool n) {isFull = n;}
+	void closeDevices();
 
 public slots:
 	void sendRawData(int, const QString raw);
 	void doPhaseCmd(int type, int w);
+	void openProduct(QStringList dev);
 
 signals:
-	void processMoto(QString res);
-	void processNav(int, QString res);
+	void processMoto(QString);
+	void processNav(int, QString);
 	void rollfinish();
 	void updateVol(int, int);
 	void updateCount(int, int, int, int);
 	void updateSerialLog(int, QByteArray);
-
 
 private slots:
 	void readSerialData();
@@ -70,8 +70,8 @@ private:
 	int checkPhaseRes();
 	void procRXChar(int sid, unsigned char c);
 	void handleFullData(int sid);
-	void procVol(int pid, QByteArray res);
-	void freshSummary(int result);
+	void procVol(int pid, QByteArray);
+	void openMotor();
 
 	Serial_FD sfd[MAXCOM];
 	unsigned char *cmd;

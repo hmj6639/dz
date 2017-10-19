@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define MOTOR_SPEED 38400
+#define PRODUCT_SPEED 115200
+
 unsigned char bufEng[] = {0x01, 0x10, 0x71, 0x48, 0x00, 0x02, 0x04, 0x00, 0x4f, 0x00, 0x00, 0xaf, 0xbc};
 unsigned char phaseEngRes[] = {0x01, 0x10, 0x71, 0x48, 0x00, 0x02, 0xda, 0xe2};
 unsigned char bufPos[] = {0x01, 0x10, 0x71, 0x58, 0x00, 0x02, 0x04, 0x00, 0x01, 0x00, 0x00, 0xce, 0xa7};
@@ -22,11 +25,11 @@ unsigned char bufSto[] = {0x01, 0x10, 0x71, 0x48, 0x00, 0x02, 0x04, 0x00, 0x0f, 
 unsigned char phaseStoRes[] = {0x01, 0x10, 0x71, 0x48, 0x00, 0x02, 0xda, 0xe2};
 
 
-unsigned char bufArr[] = {0x01,  0x20, 0x71, 0x49, 0x00, 0x02, 0x04, 0x04, 0x00, 0x00, 0x00, 0x5e, 0x68};
+unsigned char bufArr[] = {0x01, 0x20, 0x71, 0x49, 0x00, 0x02, 0x04, 0x04, 0x00, 0x00, 0x00, 0x5e, 0x68};
 
 void dumpBuf(int n, unsigned char *buf, int s)
 {
-	printf("%d:  ", n);
+	printf("%d: ", n);
 	for(int i = 0; i < s; i++) {
 		printf("%x ", buf[i]);
 	}
@@ -79,7 +82,7 @@ void fillCycBuf(int cyc, unsigned char *buf, int len)
 		buf[9] = 0xff;
 		buf[10] = 0xff;
 	}
-	else if(cyc == -2)  {
+	else if(cyc == -2) {
 		buf[7] = 0xff;
 		buf[8] = 0xfe;
 		buf[9] = 0xff;
@@ -217,7 +220,7 @@ void SerialWorker::openDevice(int sid, QString tryDev, int rate)
 		if (ports.at(i).portName() == tryDev) {
 
 			portInfo = ports.at(i);
-			qDebug()<<"try	  "<< sid << "   " <<tryDev;
+			qDebug()<<"try	"<< sid << " " <<tryDev;
 			setSerialPort(sid, &portInfo, rate);
 			break;
 		}
@@ -226,19 +229,25 @@ void SerialWorker::openDevice(int sid, QString tryDev, int rate)
 
 void SerialWorker::run()
 {
-#ifdef Q_OS_LINUX
-	openDevice(0, "ttyUSB0", 115200);
-#else
-	openDevice(0, "COM1", 38400);
-	doPhaseCmd(0);
+	openMotor();
+}
 
-	openDevice(1, "COM17", 115200);
-	openDevice(2, "COM16", 115200);
-	openDevice(3, "COM18", 115200);
+void SerialWorker::openMotor()
+{
+#ifdef Q_OS_LINUX
+	openDevice(0, "tnt1", MOTOR_SPEED);
+#else
+	openDevice(0, "COM1", MOTOR_SPEED);
 #endif
+	doPhaseCmd(0);
 }
 
 SerialWorker::~SerialWorker()
+{
+	closeDevices();
+}
+
+void SerialWorker::closeDevices()
 {
 	for(int sid = 0; sid < 4; sid++)
 		closeDevice(sid);
@@ -289,43 +298,43 @@ void SerialWorker::setSerialPort(int sid, QSerialPortInfo *port, int rate )
 
 void SerialWorker::phaseRes()
 {
-	qDebug()<<"call " << sec;
+	qDebug()<<"ccccccall " << sec;
 	doPhaseCmd(sec);
 }
 
 int SerialWorker::checkPhaseRes()
 {
-	unsigned char *res;
+	unsigned char *motorRes;
 	int resLen;
 
 	switch(sec) {
 		case ENABLEPHASE:
-			res = phaseEngRes;
+			motorRes = phaseEngRes;
 			resLen = sizeof(phaseEngRes) / sizeof(phaseEngRes[0]);
 			break;
 
 		case(SETTYPE) :
-			res = phasePosRes;
+			motorRes = phasePosRes;
 			resLen = sizeof(phasePosRes) / sizeof(phasePosRes[0]);
 			break;
 
 		case(SETCYC):
-			res = phaseCycRes;
+			motorRes = phaseCycRes;
 			resLen = sizeof(phaseCycRes) / sizeof(phaseCycRes[0]);
 			break;
 
 		case(SETANG):
-			res = phaseAngRes;
+			motorRes = phaseAngRes;
 			resLen = sizeof(phaseAngRes) / sizeof(phaseAngRes[0]);
 			break;
 
 		case(STARTR):
-			res = phaseStaRes;
+			motorRes = phaseStaRes;
 			resLen = sizeof(phaseStaRes) / sizeof(phaseStaRes[0]);
 			break;
 
 		case STOPR:
-			res = phaseStoRes;
+			motorRes = phaseStoRes;
 			resLen = sizeof(phaseStoRes) / sizeof(phaseStoRes[0]);
 			break;
 
@@ -342,7 +351,7 @@ int SerialWorker::checkPhaseRes()
 			return -1;
 
 		for(j = 0; j<resLen; j++) {
-			if(tmpRes[i + j] != res[j]) 
+			if(tmpRes[i + j] != motorRes[j]) 
 				break;
 		}
 		if(j == resLen)
@@ -377,20 +386,9 @@ void SerialWorker::dealWithPhaseRes(QByteArray &text)
 
 void SerialWorker::dealWithNavRes(int sid, QByteArray &text)
 {
-#if 0
-	sfd[sid].res+=text;
-	if(sfd[sid].res.contains('>') && sfd[sid].res.count('\n') > 1) {
-
-		//qDebug()<<sid <<" " <<sfd[sid].res;
-		processNav(sid, sfd[sid].res);
-		sfd[sid].res="";
-		sfd[sid].req_=0;
-	}
-#else
 	for(int i = 0; i < text.length(); i++) {
 		procRXChar(sid, text.at(i));
 	}
-#endif
 }
 
 void SerialWorker::procRXChar(int sid, unsigned char c)
@@ -421,17 +419,17 @@ void SerialWorker::procRXChar(int sid, unsigned char c)
 	}
 }
 
-void SerialWorker::procVol(int pid, QByteArray res)
+void SerialWorker::procVol(int pid, QByteArray volS)
 {
 	unsigned char c[2], v;
 
 	for(int i = 0; i < 2; i++) {
-		c[i] = res.at(i);
+		c[i] = volS.at(i);
 	}
-	res.remove(0,2);
+	volS.remove(0,2);
 
 	if(c[0] == 0x4c && c[1] == 0x6f) {
-		v = res.at(3);
+		v = volS.at(3);
 		//qDebug()<<"vol is " << v;
 		emit updateVol(pid, v);
 	}
@@ -490,8 +488,8 @@ void SerialWorker::readSerialData()
 
 	if(sid == 0) 
 		return dealWithPhaseRes(text);
-	/*else //if(sfd[sid].req_ == 1)
-	  return dealWithNavRes(sid, text);*/
+	/*else
+	  return dealWithNavRes(sid - 1, text);*/
 	else
 		return dealWithNavSerial(sid - 1, text);
 }
@@ -565,8 +563,11 @@ void SerialWorker::sendRawData(int idx, QString cmd)
 
 		//qDebug()<<" s " << (idx & (1 << i)) << " sendr i" << i << " idx " << idx << " " << cmd;
 		sfd[i].serial->write(cmd.toLatin1());
-
-		if(i < 3)
-			sfd[i].req_ = 1;
 	}
+}
+
+void SerialWorker::openProduct(QStringList d)
+{
+	for(int i = 1; i < 4; i++)
+		openDevice(i, d[i-1], PRODUCT_SPEED);
 }

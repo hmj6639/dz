@@ -12,6 +12,7 @@ class QMessageBox;
 class QFile;
 class QTextStream;
 class QCheckBox;
+class DialogConfig;
 
 namespace Ui {
 	class MainWindow;
@@ -61,12 +62,14 @@ private:
 	QList <int> angs;
 	QList <int> durs;
 	QString *dir= NULL;
+	DialogConfig *dc;
 
 	QFile *logFileMotor = NULL, *logFile[3] = {NULL, NULL, NULL}, *logFilef[3] ={NULL, NULL, NULL};
 	QTextStream *inMotor= NULL, *in[3] = {NULL, NULL, NULL}, *inf[3] = {NULL, NULL, NULL};
 
 	int checkAng();
 	void E_D_Status(bool, bool, bool, bool);
+	void angTrim(bool a, bool b);
 	void fastGo(int);
 	void openDevice();
 	void freshSummary(int result);
@@ -77,10 +80,13 @@ public 	slots:
 	void updateVol(int, int);
 	void updateCount(int pid, int type, int curent, int acc);
 	void updateSerialLog(int, QByteArray);
+	void freshSerial();
+	void setSerial(QStringList &);
 
 signals:
 	void sendRawData(int, QString);
 	void doPhaseCmd(int, int);
+	void openProduct(QStringList);
 };
 
 #endif // MAINWINDOW_H
