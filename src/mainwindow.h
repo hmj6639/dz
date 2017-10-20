@@ -28,6 +28,9 @@ public:
 	void doWarning(QString label);
 	void run();
 
+protected:
+	void closeEvent(QCloseEvent *event) Q_DECL_OVERRIDE;
+
 private slots:
 
 	void on_start_clicked();
@@ -40,7 +43,6 @@ private slots:
 	void on_btnAdClockwise_clicked();
 	void on_Go_clicked();
 	void on_Flog_toggled(bool checked);
-
 	void on_pushButton_clicked();
 
 private:

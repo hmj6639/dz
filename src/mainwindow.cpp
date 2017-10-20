@@ -526,3 +526,13 @@ void MainWindow::setSerial(QStringList &dev)
 	emit openProduct(dev);
 	ui->start->setEnabled(true);
 }
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+	int ret = myHelper::ShowMessageBoxQuesion("Do you really want to quit?");
+
+	if(ret == 0)
+		event->ignore();
+	else
+		event->accept();
+}
