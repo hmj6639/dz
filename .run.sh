@@ -8,8 +8,8 @@ if [ "$pid" != "" ];then
 	kill $pid
 fi
 has=`lsmod | grep tty0tty | wc -l`
-if [ "${has}" == "0" ] && [ -d "../tty0tty" ];then
-	sudo insmod ../tty0tty/module/tty0tty.ko
+if [ "${has}" == "0" ] && [ -d "~/Project/tty0tty" ];then
+	sudo insmod ~/Project/tty0tty/module/tty0tty.ko
 	sudo chmod a+r /dev/tnt*
 	sudo chmod a+w /dev/tnt*
 	sudo chown gino:gino /dev/tnt*

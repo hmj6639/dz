@@ -17,6 +17,7 @@ compile:
 	@echo "##############################################"
 
 run:
+	chmod a+x .run.sh
 	@./.run.sh
 
 clean:
