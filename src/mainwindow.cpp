@@ -16,8 +16,15 @@
 //int STATICWAIT[] = {1500, 3800, 2800, 3800, 2800, 3800, 7500};
 
 
-int STATICWAIT[] = {1500, 3800, 2500, 3800, 2500, 3800, 6500};//slow
+//int STATICWAIT[] = {1500, 3800, 2500, 3800, 2500, 3800, 6500};//slow 1
+int STATICWAIT[] = {2000, 4800, 3000, 4800, 3000, 4800, 8500};//slow 0.8
+
 //int STATICWAIT[] = {1200, 2100, 1500, 2100, 1500, 2100, 3500};//fast
+
+//int STATICWAIT[] = {3800, 2500, 3800, 2500, 3800, 6500};//no press
+//int STATICWAIT[] = {3800, 2500, 3800, 2500, 3800};//no press
+
+
 QString RESULTOK = "    Result : OK";
 
 void MainWindow::initSize()
@@ -67,8 +74,15 @@ void MainWindow::freshSerial()
 	devs.removeOne("tnt2");
 	devs.removeOne("tnt4");
 	devs.removeOne("tnt6");
+
+	devs.removeOne("tnt3");//ttyUSB0
+	devs.removeOne("tnt5");//ttyUSB1
+	devs.removeOne("tnt7");
 #else
 	devs.removeOne("COM1");
+	devs.removeOne("COM2");
+	devs.removeOne("COM3");
+	devs.removeOne("COM4");
 #endif
 	dc->setInterface(devs);
 }
@@ -79,11 +93,12 @@ void MainWindow::openDevice()
 	freshSerial();
 	sw->moveToThread(&serialWorkerThread);
 	connect(&serialWorkerThread, &QThread::started, sw, &SerialWorker::run);
-	connect(this, &MainWindow::sendRawData, sw, &SerialWorker::sendRawData);
+    connect(this, &MainWindow::controlVol, sw, &SerialWorker::controlVol);
 	connect(this, &MainWindow::doPhaseCmd, sw, &SerialWorker::doPhaseCmd);
 	connect(this, &MainWindow::openProduct, sw, &SerialWorker::openProduct, Qt::QueuedConnection);
 	connect(sw, &SerialWorker::rollfinish, this, &MainWindow::rollfinish);
 	connect(sw, &SerialWorker::updateVol, this, &MainWindow::updateVol);
+    connect(sw, &SerialWorker::informPress, this, &MainWindow::informPress);
 	connect(sw, &SerialWorker::updateCount, this, &MainWindow::updateCount);
 	connect(sw, &SerialWorker::updateSerialLog, this, &MainWindow::updateSerialLog);
 	connect(&serialWorkerThread, &QThread::finished, sw, &QObject::deleteLater);
@@ -282,8 +297,8 @@ void MainWindow::on_Go_clicked()
 void MainWindow::doAroll()
 {
 	int ang;
-	QString startTime = QDateTime::currentDateTime().toString("yyyy-M-dd, hh:mm:ss.zzz");
-	QString lastArr = "\t\t\t-->ok";
+    QString startTime = QDateTime::currentDateTime().toString("yyyy-M-dd,hh:mm:ss.zzz");
+    QString lastArr = "\t-->ok";
 	static QString aLog;
 
 	if(paused == 1) {
@@ -313,14 +328,24 @@ void MainWindow::doAroll()
 					in[2] = new QTextStream(logFile[2]);
 				}
 
-				if(in[0] && logFile[0])
+				if(in[0] && logFile[0]) {
 					*in[0] << startLine << "\n";
-				if(in[1] && logFile[1])
+					in[0]->flush();
+				}
+				if(in[1] && logFile[1]) {
 					*in[1] << startLine << "\n";
-				if(in[2] && logFile[2])
+					in[1]->flush();
+				}
+				if(in[2] && logFile[2]) {
 					*in[2] << startLine << "\n";
+					in[2]->flush();
+				}
 			}
 			else {
+                if(min == 1) {
+                    sw->controlVol();
+                    QThread::sleep(1);
+                }
 				ui->result->moveCursor(QTextCursor::End);
 				ui->result->insertPlainText(lastArr);/////
 				ui->result->moveCursor(QTextCursor::End);
@@ -333,12 +358,26 @@ void MainWindow::doAroll()
 			qDebug()<< durs[min];
 			emit doPhaseCmd(SETCYC, durs[min]);
 			startTime = QDateTime::currentDateTime().toString("yyyy-M-dd,hh:mm:ss.zzz");
-			QString angLine = "    " + startTime + " roll " + QString::number(ang);
-			if(min == 0 || min == angs.size() -2)
-				angLine += " and press";
+			QString angLine = "\t" + startTime + " roll " + QString::number(ang);
+            /*if(min == 0 || min == angs.size() -2)
+                angLine += " and press";
 			if(min == angs.size() -1)
-				angLine += " and return to start point";
+                angLine += " and return to start point";*/
 			ui->result->appendPlainText(angLine);
+			{
+				if(in[0]) {
+					*in[0]<<angLine << "\n";;
+					in[0]->flush();
+				}
+                if(in[1]) {
+					*in[1]<<angLine << "\n";;
+					in[1]->flush();
+				}
+                if(in[2]) {
+					*in[2]<<angLine << "\n";
+					in[2]->flush();
+				}
+			}
 			aLog = angLine;
 
 			min++;
@@ -371,6 +410,8 @@ void MainWindow::doAroll()
 				count++;
 				ui->left->setText(QString::number(ui->cycle->value() - count));
 				ui->pb->setValue(count);
+              //  sw->controlVol();
+              //  QThread::sleep(1);
 				doAroll();
 			}
 			else {
@@ -402,6 +443,8 @@ void MainWindow::doAroll()
 			count++;
 			ui->left->setText(0);
 			ui->pb->setValue(count);
+          //  sw->controlVol();
+         //   qDebug()<<"xxx2";
 			doWarning("The test has been finished");
 			E_D_Status(true, false, false, true);
 			angTrim(true, true);
@@ -412,9 +455,48 @@ void MainWindow::doAroll()
 	}
 }
 
-void MainWindow::updateVol(int pid, int vol)
+void MainWindow::informPress(int product)
 {
-	qDebug()<<"now min " << min << " product " << pid << " vol " << vol;
+    QString str = "Pressed";
+    if(product ==1 && in[0]) {//A
+        *in[0] <<"\t\t"<< str <<"\n";
+        in[0]->flush();
+    }
+    if(product ==2 &&in[2]) {//C
+        *in[2] <<"\t\t"<< str <<"\n";
+        in[2]->flush();
+
+    }
+    if(product ==3&&in[1]) {//B
+        *in[1] <<"\t\t"<< str <<"\n";
+        in[1]->flush();
+    }
+}
+
+void MainWindow::updateVol(int pid, int vol, QByteArray f)
+{
+	QString p;
+
+	if(pid == 0)
+		p = "A ";
+	else if(pid == 1)
+		p = "B ";
+	else
+		p = "C ";
+
+	if(in[pid]) {
+#if 1
+		*in[pid] <<"\t\t"<< f <<"\n";
+#else
+			*in[pid] <<"\t\t";
+			for(int i = 0; i < 20; i+=2) {
+				*in[pid] << f[i] << " " << f[i + 1] << " ";		
+			}
+			*in[pid] << "\n";
+#endif
+		*in[pid] << "\t\t"<< "vol is " << vol << "\n";
+		in[pid]->flush();
+	}
 }
 
 void MainWindow::updateCount(int pid, int type, int current, int acc)

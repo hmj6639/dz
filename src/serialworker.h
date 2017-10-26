@@ -14,7 +14,7 @@
 typedef struct {
 	QSerialPort *serial = NULL;
 	QByteArray res;
-	unsigned char  ffFlag;
+	unsigned char  ffFlag = 0;
 }Serial_FD;
 
 enum phase{
@@ -42,17 +42,18 @@ public:
 	void closeDevices();
 
 public slots:
-	void sendRawData(int, const QString raw);
 	void doPhaseCmd(int type, int w);
 	void openProduct(QStringList dev);
+    void controlVol();
 
 signals:
 	void processMoto(QString);
 	void processNav(int, QString);
 	void rollfinish();
-	void updateVol(int, int);
+	void updateVol(int, int, QByteArray);
 	void updateCount(int, int, int, int);
 	void updateSerialLog(int, QByteArray);
+    void informPress(int);
 
 private slots:
 	void readSerialData();
@@ -70,7 +71,7 @@ private:
 	int checkPhaseRes();
 	void procRXChar(int sid, unsigned char c);
 	void handleFullData(int sid);
-	void procVol(int pid, QByteArray);
+	void procVol(int sid, int pid, QByteArray);
 	void openMotor();
 
 	Serial_FD sfd[MAXCOM];
@@ -78,6 +79,10 @@ private:
 	int sec;
 	unsigned char tmpRes[32];
 	bool isFull = false;
+  //  QString p[3] = {"","",""};
+    QString r1 = "";
+    QString r2 = "";
+    QString r3 = "";
 };
 
 #endif // SERIALWORKER_H

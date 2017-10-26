@@ -21,4 +21,6 @@ if [ "$pid" == "" ] && [ -f ~/${spp} ];then
 	~/${spp} &
 fi
 
+sudo chown gino:gino /dev/tnt*
+sudo chown gino:gino /dev/ttyUSB*
 GDK_BACKEND=x11 ../build-dz-Desktop-Debug/${app} &

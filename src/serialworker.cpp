@@ -1,4 +1,5 @@
 #include <QDebug>
+#include <QThread>
 #include "serialworker.h"
 
 #include <stdio.h>
@@ -292,7 +293,7 @@ void SerialWorker::setSerialPort(int sid, QSerialPortInfo *port, int rate )
 	sfd[sid].serial->setDataTerminalReady(true); //you do need to set these or the fan gets dirty
 	sfd[sid].serial->setRequestToSend(true);
 
-	connect(sfd[sid].serial, &QSerialPort::readyRead, this, &SerialWorker::readSerialData);
+    connect(sfd[sid].serial, &QSerialPort::readyRead, this, &SerialWorker::readSerialData);
 	qDebug()<<"open " << sid << " finish";
 }
 
@@ -419,9 +420,10 @@ void SerialWorker::procRXChar(int sid, unsigned char c)
 	}
 }
 
-void SerialWorker::procVol(int pid, QByteArray volS)
+void SerialWorker::procVol(int sid, int pid, QByteArray volS)
 {
 	unsigned char c[2], v;
+	QByteArray res = sfd[sid].res.toHex();
 
 	for(int i = 0; i < 2; i++) {
 		c[i] = volS.at(i);
@@ -430,42 +432,87 @@ void SerialWorker::procVol(int pid, QByteArray volS)
 
 	if(c[0] == 0x4c && c[1] == 0x6f) {
 		v = volS.at(3);
-		//qDebug()<<"vol is " << v;
-		emit updateVol(pid, v);
+		res = res.mid(2, 20);
+		if(res[0] == '9')
+			res[0]= '1';
+		//qDebug()<< "--- " <<res;
+		emit updateVol(pid, v, res);
 	}
 }
 
 void SerialWorker::handleFullData(int sid)
 {
-	// qDebug()<< sfd[sid].res.toHex();
 	unsigned char c[5];
+	QByteArray res = sfd[sid].res;
+	int type = -1;
 
 	for(int i = 0; i < 5; i++) {
-		c[i] = sfd[sid].res.at(i);
+		c[i] = res.at(i);
 	}
 
-	sfd[sid].res.remove(0,5);
+	res.remove(0,5);
 
-	if(!((c[1] & 0x7f) == 0x17 && c[2] == 0x33 && c[3] == 0x31 && c[4] == 0x10)) {
+	if((c[1] & 0x7f) == 0x17 && c[2] == 0x33 && c[3] == 0x31 && c[4] == 0x10) {
 		// qDebug()<<id[0] << id[1] << id[2] << id[3];
-		return;
+		//return;
+		type = 0;
 	}
-	//qDebug()<< sfd[sid].res.toHex();
-	if((c[0] & 0xf8) == 0x50) {//can 1
-		//qDebug()<<"can 1 " << sfd[sid].res.toHex();
+    if(c[1] == 0x9b && c[2] == 0x00 && c[3] == 0x00 && c[4] == 0x73) {
+        type =1;
+    }
 
-		if(sid == 1)
-			procVol(0, sfd[sid].res);
-		else if(sid == 2)
-			procVol(2, sfd[sid].res);
-		else
-			qDebug()<<"unknown vol";
+	if(type == 0) {
+		if((c[0] & 0xf8) == 0x50) {//can 1
+			//qDebug()<< sid << " can 1 " << res.toHex();
+
+			if(sid == 1)
+				procVol(sid, 0, res);
+			else if(sid == 2)
+				procVol(sid, 2, res);
+			else
+				qDebug()<<"unknown vol";
+		}
+		else if ((c[0] & 0xf8) == 0x58) {
+			procVol(sid, 1, res);
+		}
+		else {
+			qDebug()<<"unknown";
+		}
 	}
-	else if ((c[0] & 0xf8) == 0x58) {
-		procVol(1, sfd[sid].res);
-	}
-	else {
-		qDebug()<<"unknown";
+	else if(type == 1) {
+        res.remove(0,6);
+        res = res.mid(0,1);
+        QString s =res.toHex();
+
+        if((c[0] & 0xf8) == 0x50) {//can 1
+            if(sid == 1) {
+                if(r1 == "" || r1!= s) {
+                    r1 = s;
+                    if(r1 != "")
+                        informPress(1);//A
+                }
+            }
+            else if(sid == 2) {
+                if(r2 == "" || r2 != s) {
+                    r2 = s;
+                    if(r2 != "")
+                        informPress(2);//C
+                }
+            }
+            else {
+                qDebug()<<"unknown press";
+            }
+        }
+        else if ((c[0] & 0xf8) == 0x58) {
+            if(r3 == "" || r3!= s) {
+                r3 = s;
+                if(r3 != "")
+                    informPress(3);//B
+            }
+        }
+        else {
+            qDebug()<<"unknown pres";
+        }
 	}
 }
 
@@ -480,7 +527,7 @@ void SerialWorker::readSerialData()
 			break;
 	}
 
-	// qDebug()<<sid;
+//	qDebug()<<sid;
 	if(sid >= 4)
 		return;
 
@@ -488,10 +535,14 @@ void SerialWorker::readSerialData()
 
 	if(sid == 0) 
 		return dealWithPhaseRes(text);
-	/*else
-	  return dealWithNavRes(sid - 1, text);*/
+
+#if 1
+	else
+		return dealWithNavRes(sid, text);
+#else
 	else
 		return dealWithNavSerial(sid - 1, text);
+#endif
 }
 
 
@@ -552,22 +603,176 @@ void SerialWorker::dealWithNavSerial(int sid, QByteArray &text)
 	}
 }
 
-void SerialWorker::sendRawData(int idx, QString cmd)
+
+QByteArray buildCan1_1()
 {
-	cmd+="\n";
+    QList <char> cmd;
+    QByteArray raw;
 
-	for(int i = 0; i < 4; i++) {
+    cmd.append(0x50);
+    cmd.append(0x05);
 
-		if((idx & (1 << i)) == 0)
-			continue;
+    cmd.append(0xbf);
+    cmd.append(0x20);
+    cmd.append(0x00);
+    cmd.append(0x00);
+    cmd.append(0x00);
+    cmd.append(0xff);
+    cmd.append(0x00);
 
-		//qDebug()<<" s " << (idx & (1 << i)) << " sendr i" << i << " idx " << idx << " " << cmd;
-		sfd[i].serial->write(cmd.toLatin1());
-	}
+    for(int i = 0; i < cmd.count(); i++)
+        raw.append(cmd[i]);
+    return raw;
+}
+
+QByteArray buildCan2_1()
+{
+    QList <char> cmd;
+    QByteArray raw;
+
+    cmd.append(0x58);
+    cmd.append(0x05);
+
+    cmd.append(0xbf);
+    cmd.append(0x20);
+    cmd.append(0x00);
+    cmd.append(0x00);
+    cmd.append(0x00);
+    cmd.append(0xff);
+    cmd.append(0x00);
+
+    for(int i = 0; i < cmd.count(); i++)
+        raw.append(cmd[i]);
+    return raw;
+
+}
+
+QByteArray buildCan1_2()
+{
+    QList <char> cmd;
+    QByteArray raw;
+
+    cmd.append(0x50);
+    cmd.append(0x05);
+
+    cmd.append(0xbf);
+    cmd.append(0x00);
+    cmd.append(0x00);
+    cmd.append(0x00);
+    cmd.append(0x00);
+    cmd.append(0xff);
+    cmd.append(0x00);
+    for(int i = 0; i < cmd.count(); i++)
+        raw.append(cmd[i]);
+    return raw;
+
+}
+
+
+QByteArray buildCan2_2()
+{
+    QList <char> cmd;
+    QByteArray raw;
+
+    cmd.append(0x58);
+    cmd.append(0x05);
+
+    cmd.append(0xbf);
+    cmd.append(0x00);
+    cmd.append(0x00);
+    cmd.append(0x00);
+    cmd.append(0x00);
+    cmd.append(0xff);
+    cmd.append(0x00);
+    for(int i = 0; i < cmd.count(); i++)
+        raw.append(cmd[i]);
+    return raw;
+
+}
+
+void SerialWorker::controlVol()
+{
+    qDebug()<<"xxx1";
+
+    sfd[1].serial->write(buildCan1_1());//dut1 20
+    sfd[1].serial->flush();
+
+    QThread::msleep(100);
+    qDebug()<<"xxx2";
+
+    sfd[2].serial->write(buildCan1_1());//dut3 20
+    sfd[2].serial->flush();
+    QThread::msleep(100);
+
+    qDebug()<<"xxx3";
+
+    sfd[1].serial->write(buildCan1_2()); //dut1 00
+    sfd[1].serial->flush();
+    QThread::msleep(100);
+    qDebug()<<"xxx4";
+
+    sfd[2].serial->write(buildCan1_2()); //dut3 00
+    sfd[2].serial->flush();
+    QThread::msleep(100);
+    qDebug()<<"xxx5";
+
+   sfd[1].serial->write(buildCan2_1()); //dut 2 20
+    sfd[1].serial->flush();
+    QThread::msleep(100);
+    qDebug()<<"xxx6";
+
+    sfd[1].serial->write(buildCan2_2());//dut2 00
+    sfd[1].serial->flush();
+    QThread::msleep(100);
+
+    qDebug()<<"xxx7";
+
+    /*QByteArray cmd;
+    qDebug()<<"xxx 1";
+
+    cmd[0]= 0x50;
+    cmd[1]= 0x05;
+    cmd[2]= 0xbf;
+    cmd[3] = 0x20;
+    cmd[4] = 0x00;
+    cmd[5] = 0x00;
+    cmd[6] = 0x00;
+    cmd[7] = 0xff;
+    cmd[8] = 0x00;
+
+    sfd[1].serial->write(cmd);//can 1
+    QThread::msleep(100);
+    qDebug()<<"xxx 2";
+
+    sfd[2].serial->write(cmd);//can 1
+    QThread::msleep(100);
+
+    cmd[0]= 0x58;
+    sfd[1].serial->write(cmd);//can 2
+    qDebug()<<"xxx 3";
+
+    QThread::msleep(100);
+
+    cmd[0]= 0x50;
+    cmd[1]= 0x05;
+    cmd[2]= 0xbf;
+    cmd[3] = 0x00;
+    cmd[4] = 0x00;
+    cmd[5] = 0x00;
+    cmd[6] = 0x00;
+    cmd[7] = 0xff;
+    cmd[8] = 0x00;
+
+    sfd[1].serial->write(cmd);//can 1
+    sfd[2].serial->write(cmd);//can 1
+
+    cmd[0]= 0x58;
+    sfd[1].serial->write(cmd);//can 2
+    QThread::msleep(500);*/
 }
 
 void SerialWorker::openProduct(QStringList d)
 {
-	for(int i = 1; i < 4; i++)
-		openDevice(i, d[i-1], PRODUCT_SPEED);
+	for(int i = 0; i < d.size(); i++)
+		openDevice(i + 1, d[i], PRODUCT_SPEED);
 }

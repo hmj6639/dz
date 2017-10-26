@@ -79,16 +79,18 @@ private:
 public 	slots:
 	void doAroll();
 	void rollfinish();
-	void updateVol(int, int);
+	void updateVol(int, int, QByteArray);
 	void updateCount(int pid, int type, int curent, int acc);
 	void updateSerialLog(int, QByteArray);
 	void freshSerial();
 	void setSerial(QStringList &);
+    void informPress(int);
 
 signals:
 	void sendRawData(int, QString);
 	void doPhaseCmd(int, int);
 	void openProduct(QStringList);
+    void controlVol();
 };
 
 #endif // MAINWINDOW_H
