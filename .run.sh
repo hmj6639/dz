@@ -23,4 +23,8 @@ fi
 
 sudo chown gino:gino /dev/tnt*
 sudo chown gino:gino /dev/ttyUSB*
-GDK_BACKEND=x11 ../build-dz-Desktop-Debug/${app} &
+if [ -f ../build-dz-Desktop-Debug/${app} ];then
+	GDK_BACKEND=x11 ../build-dz-Desktop-Debug/${app} &
+else
+	GDK_BACKEND=x11 ../build-dz-Desktop-Debug/debug/${app} &
+fi

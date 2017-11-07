@@ -210,6 +210,9 @@ void SerialWorker::getAllDevice(QStringList &listDev)
 
 	for(int i = 0; i < ports.count(); i++)
 		listDev << ports.at(i).portName();
+
+	if(listDev.contains("COM1") || listDev.contains("tnt1"))
+		motorReady = 1;
 }
 
 void SerialWorker::openDevice(int sid, QString tryDev, int rate)
@@ -230,7 +233,8 @@ void SerialWorker::openDevice(int sid, QString tryDev, int rate)
 
 void SerialWorker::run()
 {
-	openMotor();
+	if(motorReady == 1)
+		openMotor();
 }
 
 void SerialWorker::openMotor()

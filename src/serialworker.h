@@ -79,6 +79,7 @@ private:
 	int sec;
 	unsigned char tmpRes[32];
 	bool isFull = false;
+	int motorReady = 0;
   //  QString p[3] = {"","",""};
     QString r1 = "";
     QString r2 = "";
